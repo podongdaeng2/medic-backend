@@ -87,7 +87,7 @@ object OpenAiService { // by lazy 선언 쓰는법 알아와서 적절한데에 
 
         BasicRepository.insertMessage(
             threadIdInput = latestMessage.threadId.id,
-            messageIdInput = latestMessage.content.toString(),
+            messageIdInput = latestMessage.id.id,
             contentInput = latestMessage.content.toString()
         )
 
