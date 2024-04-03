@@ -8,15 +8,19 @@ import podongdaeng2.chatgpt.OpenAiService
 
 @RestController
 class MainController {
-    @GetMapping("/hello")
-    suspend fun listAssistants(@RequestParam name: String): String {
+    @GetMapping("/list-assistants")
+    suspend fun listAssistants(): List<String> {
 //        BasicRepository.basicInsert()
-        OpenAiService.listAssistants()
-        return "Hello, $name!"
+        return OpenAiService.listAssistants()
     }
 
     @GetMapping("/talk-medical-guesser")
     suspend fun talkMedicalGuesser(@RequestParam talk: String): String {
         return OpenAiService.talkMedicalGuesser(talk)
+    }
+
+    @GetMapping("/modify-medical-guesser")
+    suspend fun modifyMedicalGuesser() {
+        OpenAiService.modifyMedicalGuesser()
     }
 }
