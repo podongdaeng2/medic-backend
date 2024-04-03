@@ -71,9 +71,11 @@ object OpenAiService { // by lazy 선언 쓰는법 알아와서 적절한데에 
             )
 
             if (currentRun.completedAt != null) {
+                println("RUN COMPLETED ${run.completedAt}")
                 break
             } else if (currentRun.failedAt != null) {
                 // TODO: Handle failure
+                println("FAILED RUN!! ${run.failedAt}")
                 break
             }
             println()
@@ -81,9 +83,10 @@ object OpenAiService { // by lazy 선언 쓰는법 알아와서 적절한데에 
         }
 
         val latestMessage = openAI.messages(threadId = ThreadId(thread.id.id)).first()
-        println()
+        println() // TODO-MINOR-DELETE: for logs, delete
         println(latestMessage.content)
         println()
+        openAI.delete(id = ThreadId(thread.id.id))
 
         BasicRepository.insertMessage(
             threadIdInput = latestMessage.threadId.id,
@@ -91,7 +94,6 @@ object OpenAiService { // by lazy 선언 쓰는법 알아와서 적절한데에 
             contentInput = latestMessage.content.toString()
         )
 
-        openAI.delete(id = ThreadId(thread.id.id))
         return latestMessage.toString() // seems like ordered in descending order of time?
     }
 
