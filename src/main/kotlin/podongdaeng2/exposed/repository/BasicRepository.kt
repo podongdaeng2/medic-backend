@@ -29,10 +29,10 @@ object BasicRepository {
         return id
     }
 
-    fun insertMessage(threadIdInput: String, messageIdInput: String, contentInput: String): String {
+    fun insertMessage(assistantIdInput: String, messageIdInput: String, contentInput: String): String {
         val id = transaction {
             MessageThreadTable.insert {
-                it[threadId] = threadIdInput
+                it[assistantId] = assistantIdInput
                 it[messageId] = messageIdInput
                 it[content] = contentInput
             } get MessageThreadTable.messageId

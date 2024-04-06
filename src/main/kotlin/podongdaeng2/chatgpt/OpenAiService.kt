@@ -3,7 +3,11 @@ package podongdaeng2.chatgpt
 import com.aallam.openai.api.BetaOpenAI
 import com.aallam.openai.api.assistant.AssistantId
 import com.aallam.openai.api.assistant.AssistantRequest
+import com.aallam.openai.api.assistant.AssistantTool
 import com.aallam.openai.api.core.Role
+import com.aallam.openai.api.file.FileSource
+import com.aallam.openai.api.file.FileUpload
+import com.aallam.openai.api.file.Purpose
 import com.aallam.openai.api.http.Timeout
 import com.aallam.openai.api.message.MessageRequest
 import com.aallam.openai.api.model.ModelId
@@ -14,9 +18,9 @@ import com.aallam.openai.client.OpenAI
 import io.github.cdimascio.dotenv.Dotenv
 import io.github.cdimascio.dotenv.dotenv
 import kotlinx.coroutines.delay
+import okio.FileSystem
+import okio.Path.Companion.toPath
 import podongdaeng2.exposed.repository.BasicRepository
-import java.time.Duration
-import kotlin.concurrent.fixedRateTimer
 import kotlin.time.Duration.Companion.seconds
 
 object OpenAiService { // by lazy 선언 쓰는법 알아와서 적절한데에 써야할수도
@@ -25,7 +29,7 @@ object OpenAiService { // by lazy 선언 쓰는법 알아와서 적절한데에 
     private val openAI = OpenAI(
         token = apiKey,
         timeout = Timeout(socket = 60.seconds),
-        // additional configurations...
+        // additional configurations may follow
     )
 
     suspend fun listModels() {
@@ -40,6 +44,62 @@ object OpenAiService { // by lazy 선언 쓰는법 알아와서 적절한데에 
             println(it)
         }
         return assistants.map { it.id.id + " " + it.description.toString() }
+    }
+
+    @OptIn(BetaOpenAI::class)
+    suspend fun talkDietAdvisor(talk: String): String {
+        val dietAdvisorId = AssistantId("asst_7ubPljm7e2SXlTjCiJhXthbH") // TODO-MINOR: change to DB select
+        val thread = openAI.thread()
+        // TODO: save all process? including checking completion?
+        BasicRepository.insertThread(
+            dietAdvisorId.id,
+            thread.id.id,
+        )
+        val messageRequested = openAI.message(
+            threadId = ThreadId(thread.id.id),
+            request = MessageRequest(
+                role = Role.User,
+                content = talk,
+            )
+        )
+        val run = openAI.createRun(
+            threadId = ThreadId(thread.id.id),
+            request = RunRequest(assistantId = AssistantId(dietAdvisorId.id)),
+        )
+
+        val intervalMillis = 8000L
+        while (true) {
+            val currentRun = openAI.getRun(
+                threadId = ThreadId(thread.id.id),
+                runId = RunId(run.id.id)
+            )
+
+            if (currentRun.completedAt != null) {
+                println("RUN COMPLETED ${run.completedAt}")
+                break
+            } else if (currentRun.failedAt != null) {
+                // TODO: Handle failure
+                println("FAILED RUN!! ${run.failedAt}")
+                break
+            }
+            println()
+            delay(intervalMillis) // Wait for the specified interval before the next check
+        }
+
+        val latestMessage = openAI.messages(threadId = ThreadId(thread.id.id)).first()
+        println() // TODO-MINOR-DELETE: for logs, delete
+        println(latestMessage.content)
+        println()
+        openAI.delete(id = ThreadId(thread.id.id)) // TODO: DB delete
+
+        BasicRepository.insertMessage(
+            assistantIdInput = dietAdvisorId.id,
+            messageIdInput = latestMessage.id.id,
+            contentInput = latestMessage.content.toString()
+        )
+        println("DONE REQUEST")
+
+        return latestMessage.content.toString() // seems like ordered in descending order of time?
     }
 
     @OptIn(BetaOpenAI::class)
@@ -86,13 +146,14 @@ object OpenAiService { // by lazy 선언 쓰는법 알아와서 적절한데에 
         println() // TODO-MINOR-DELETE: for logs, delete
         println(latestMessage.content)
         println()
-        openAI.delete(id = ThreadId(thread.id.id))
+        openAI.delete(id = ThreadId(thread.id.id)) // TODO: DB delete
 
         BasicRepository.insertMessage(
-            threadIdInput = latestMessage.threadId.id,
+            assistantIdInput = medicalGuesserId.id,
             messageIdInput = latestMessage.id.id,
             contentInput = latestMessage.content.toString()
         )
+        println("DONE REQUEST")
 
         return latestMessage.toString() // seems like ordered in descending order of time?
     }
@@ -101,34 +162,37 @@ object OpenAiService { // by lazy 선언 쓰는법 알아와서 적절한데에 
         return dotenv()
     }
 
+    suspend fun uploadFile() {
+        val filePath = "/disease_list_demo.xlsx" // TODO: change to Parameter or Migration page.
+        val path = filePath.toPath()
+        val file = openAI.file(
+            request = FileUpload(
+                file = FileSource(path = path, fileSystem = FileSystem.RESOURCES), // automatically searches "/src/main/resources"
+                purpose = Purpose("assistants")
+            )
+        )
+        println()
+        println(file)
+        println()
+        println(file.id)
+    }
+
     @OptIn(BetaOpenAI::class)
     @Deprecated("ONLY for creating assistant")
-    suspend fun createMedicalGuesser() {
+    suspend fun createAssistant() {
         val assistant = openAI.assistant(
             request = AssistantRequest(
-                name = "Medical Guesser",
+                name = "Diet Advisor",
                 tools = emptyList(),
-                model = ModelId("gpt-4"),
-                description = """
-                    너는 고령 고객층이 주류인 앱에서 특정 증상을 유발하는 질병이나 건강상의 문제를 추측하는 봇이다. 증상이나 조치에 대해서는 존댓말을 써야 한다.
-                    답변 양식에 대해서는 몇 가지 규칙이 존재한다.
-
-                    1. 제시된 문구에 대한 질병이나 건강상의 문제의 추측을 해라.
-                    2. 만약 문구가 질병에 대한 증상이 아니라고 추측된다면, 질병의 이름을 “추측불가” 로 추측해라.
-                    3. 정확한 진단을 내릴 필요는 없다. 여러 가지 질병의 가능성을 추측해라.
-                    4. 답변을 내릴때,
-
-                    ```
-                    {
-                    '각 질병의 이름': {
-                    "증상": '대표적인 증상이나 나쁜 점',
-                    "간단한 조치": '대처 가능한 간단한 민간요법이나 스트레칭'
-                    }
-                    }
-                    ```
-
-                    으로 key-value 형태로 JSON 형태로 만들어서 답변하라. 따옴표 한개는 입력할 주제고, 따옴표 두개의 경우 글자 그대로 출력하면 된다.
-
+                model = ModelId("gpt-3.5-turbo"),
+                instructions = """
+                    Let's think step by step.
+                    You are a Diet Advisor, which advises a better diet and lifework.
+                    You will take an input in Korean describing user's best calorie per day and what user have eaten.
+                    - Consider and answer Calories and Carbohydrate and Protein and Fats are appropriate or not
+                    - Consider vitamins are appropriate or not
+                    - Consider minerals are appropriate or not
+                    - Answer your opinion with exercise you recommend to this user
                 """.trimIndent()
             )
         )
@@ -146,31 +210,32 @@ object OpenAiService { // by lazy 선언 쓰는법 알아와서 적절한데에 
             id = AssistantId("asst_Yiv8sUTfvAioPRYYuveQ3ABm"), request = AssistantRequest(
                 description = "포동댕의 질병추론기",
                 instructions = """
-                    너는 고령 고객층이 주류인 앱에서 특정 증상을 유발하는 질병 혹은 건강상의 문제를 추측하는 봇이다. 증상이나 조치에 대해서는 존댓말을 써야 한다.
-                    답변 양식에 대해서는 몇 가지 규칙이 존재한다.
+                    Let's think step by step.
+                    You are a bot that predicts diseases or health problems that caused by certain symptoms. You will take an input from customer.
+                    There are several rules for the answer form.
 
-                    1. 제시된 문구에 대한 질병이나 건강상의 문제의 추측을 해라. 질병의 경우 현실에 존재하는, 실존하는 질병이어야 한다.
-                    2. 만약 문구가 질병에 대한 증상이 아니라고 추측된다면, 질병의 이름을 “추측불가” 로 추측해라.
-                    3. 정확한 진단을 내릴 필요는 없다. 여러 가지 질병의 가능성을 추측해라.
-                    4. 답변을 내릴때,
-
+                    - Make a guess of a disease or health problem with the phrase in Korean. A disease must be in excel sheet named disease_list_demo.xlsx I have uploaded.
+                    - refer to symptoms provided in excel sheet and compare with input.
+                    - If input provided is assumed that the phrase is not describing a symptom for disease, describe the [name of the disease] as 추측불가
+                    - You dont need to make an single diagnosis. Guess the possibility of various diseases
+                    - When you are responding ALWAYS follow this form
                     ```
                     {
                     "assumes": [
                     {
-                    "name": '각 질병의 이름'
-                    "symptom": '대표적인 증상이나 나쁜 점',
-                    "simple_aids": '대처 가능한 간단한 민간요법이나 스트레칭'
+                    "name": 'name of disease'
+                    "symptom": 'representative symtoms or effect',
+                    "simple_aids": 'Simple remedies or actions that can be dealt with'
                     }
                     ]
                     }
                     ```
 
-                    이러한 형식으로 key-value 형태로 JSON 형태로 만들어서 답변하라. 각 쌍따옴표로 표시한 key는 지시한 대로 출력하면 되고, 단일 따옴표로 표시한 value는 지시한 바에 맞게 출력하면 된다. 실제로 출력할 때는 모두 JSON 형식에 맞게 쌍따옴표를 쓴다.
-
+                    Answer by creating JSON in this format in the form of key-value. The key indicated by each double quotation mark should output exactly same, and the value indicated by a single quotation mark can be output according to the instruction. 
+                    An actual output should be printed in Korean except key of JSON.
                 """.trimIndent(),
-                tools = emptyList(),
-                model = ModelId("gpt-4"),
+                tools = listOf(AssistantTool.RetrievalTool),
+                model = ModelId("gpt-3.5-turbo"),
             )
         )
         BasicRepository.insertAssistant(
