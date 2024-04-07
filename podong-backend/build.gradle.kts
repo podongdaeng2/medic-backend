@@ -19,11 +19,12 @@ repositories {
 }
 
 dependencies {
-	// base-setups / spring
+	implementation(project(":podong-exposed"))
+
+	// spring
 	implementation("org.springframework.boot:spring-boot-starter-web:3.2.4")
-	implementation("org.springframework.boot:spring-boot-starter-data-jpa:3.2.4")
-	implementation("org.jetbrains.kotlin:kotlin-reflect")
-	implementation("mysql:mysql-connector-java:8.0.33")
+
+	// exposed
 	implementation("org.jetbrains.exposed:exposed-spring-boot-starter:0.49.0")
 
 	// for OpenAI - some might seem not, but it's dependency. how miserable.
@@ -31,12 +32,13 @@ dependencies {
 	runtimeOnly("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.8.0")
 	implementation("org.springframework.boot:spring-boot-starter-webflux:3.2.4")
 	implementation("io.ktor:ktor-client-apache5:2.3.9")
-	implementation ("com.aallam.openai:openai-client:3.7.0")
+	implementation("com.aallam.openai:openai-client:3.7.0")
 
 	// .env easier get
 	implementation("io.github.cdimascio:dotenv-kotlin:6.4.1")
 
-	testImplementation("org.springframework.boot:spring-boot-starter-test")
+	testImplementation("junit:junit:4.13.2")
+	testImplementation("org.springframework.boot:spring-boot-starter-test:3.2.4")
 }
 
 tasks.withType<KotlinCompile> {
@@ -46,6 +48,3 @@ tasks.withType<KotlinCompile> {
 	}
 }
 
-tasks.withType<Test> {
-	useJUnitPlatform()
-}

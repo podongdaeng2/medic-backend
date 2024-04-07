@@ -20,7 +20,11 @@ import io.github.cdimascio.dotenv.dotenv
 import kotlinx.coroutines.delay
 import okio.FileSystem
 import okio.Path.Companion.toPath
-import podongdaeng2.exposed.repository.BasicRepository
+import exposed.repository.BasicRepository
+import io.ktor.client.*
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
+import podongdaeng2.enums.RequestTypeEnum
 import kotlin.time.Duration.Companion.seconds
 
 object OpenAiService { // by lazy 선언 쓰는법 알아와서 적절한데에 써야할수도
@@ -67,7 +71,11 @@ object OpenAiService { // by lazy 선언 쓰는법 알아와서 적절한데에 
             request = RunRequest(assistantId = AssistantId(dietAdvisorId.id)),
         )
 
-        val intervalMillis = 8000L
+        // TODO: SAVE RUN
+
+        makeRunRequest(RequestTypeEnum.DIET_ADVISOR, run.uid)
+
+        val intervalMillis = 8000L // TODO-ASYNC: delete after implementing async
         while (true) {
             val currentRun = openAI.getRun(
                 threadId = ThreadId(thread.id.id),
@@ -243,5 +251,19 @@ object OpenAiService { // by lazy 선언 쓰는법 알아와서 적절한데에 
             instructionInput = assistant.instructions,
             modelInput = assistant.model.id,
         )
+    }
+
+    suspend fun makeRunRequest(requestTypeEnum: RequestTypeEnum, runUid: Int) {
+        val client = HttpClient() {
+            // more config can be here
+        }
+        try {
+            val response: HttpResponse = client.get("http://localhost:8090/run-request/") // TODO: CHANGE AFTER SERVER PUBLISHING. may diff between environment
+            println("Response from server: $response")
+        } catch (e: Exception) {
+            println("An error occurred: ${e.message}")
+        } finally {
+            client.close()
+        }
     }
 }

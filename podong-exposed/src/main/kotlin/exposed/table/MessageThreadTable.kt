@@ -1,4 +1,4 @@
-package podongdaeng2.exposed.table
+package exposed.table
 
 import org.jetbrains.exposed.sql.Column
 import org.jetbrains.exposed.sql.Table

@@ -16,7 +16,7 @@ class MainController {
 
     @GetMapping("/talk-diet-advisor")
     suspend fun talkDietAdvisor(@RequestParam talk: String): String {
-        val healthData = "하루 적정 칼로리 1800kcal\n" // TODO - fix with service, and calcuations
+        val healthData = "고객 정보 - 아마 프론트랑 상의" // TODO-FRONT / SAN
         return OpenAiService.talkDietAdvisor(healthData + talk)
     }
 

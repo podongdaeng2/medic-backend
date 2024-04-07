@@ -1,28 +1,23 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 plugins {
-	kotlin("jvm") version "1.9.23"
+	application
+	kotlin("jvm")
+	id("io.ktor.plugin") version "2.3.9"
 }
 
-group = "podongdaeng2"
-version = "0.0.1-SNAPSHOT"
-
-java {
-	sourceCompatibility = JavaVersion.VERSION_17
+application {
+	mainClass.set("io.ktor.server.netty.EngineMain")
 }
 
 repositories {
 	mavenCentral()
+	maven { url = uri("https://maven.pkg.jetbrains.space/public/p/ktor/eap") }
 }
 
 val exposedVersion = "0.49.0"
+val ktorVersion = "2.3.9"
 
 dependencies {
-	// base-setups
-	implementation("org.jetbrains.kotlin:kotlin-reflect")
-	implementation("mysql:mysql-connector-java:8.0.33")
-	implementation("org.jetbrains.exposed:exposed-core:$exposedVersion")
-
+	implementation(project(":podong-exposed"))
 
 	// for OpenAI - some might seem not, but it's dependency. how miserable.
 	runtimeOnly("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")
@@ -34,16 +29,9 @@ dependencies {
 	// .env easier get
 	implementation("io.github.cdimascio:dotenv-kotlin:6.4.1")
 
-	testImplementation("org.springframework.boot:spring-boot-starter-test")
-}
-
-tasks.withType<KotlinCompile> {
-	kotlinOptions {
-		freeCompilerArgs += "-Xjsr305=strict"
-		jvmTarget = "17"
-	}
-}
-
-tasks.withType<Test> {
-	useJUnitPlatform()
+	implementation("io.ktor:ktor-server-core-jvm")
+	implementation("io.ktor:ktor-server-netty-jvm")
+	implementation("io.ktor:ktor-server-config-yaml:$ktorVersion")
+//	testImplementation("ch.qos.logback:logback-classic:1.5.3")
+	testImplementation("io.ktor:ktor-server-tests-jvm")
 }
