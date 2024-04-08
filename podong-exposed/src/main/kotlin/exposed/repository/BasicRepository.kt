@@ -1,11 +1,13 @@
 package exposed.repository
 
+import exposed.table.AssistantsTable
+import exposed.table.MessageThreadTable
+import exposed.table.OpenAiRunRequestsTable
+import exposed.table.ThreadAssistantTable
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
-import exposed.table.ThreadAssistantTable
-import exposed.table.AssistantsTable
-import exposed.table.MessageThreadTable
+import java.time.LocalDateTime
 
 object BasicRepository {
     // Exposed table name and argument of function should be different. 짜치네...
@@ -20,7 +22,7 @@ object BasicRepository {
         return id
     }
 
-    fun insertThread(assistantIdInput: String, threadIdInput: String,): String {
+    fun insertThread(assistantIdInput: String, threadIdInput: String): String {
         val id = transaction {
             ThreadAssistantTable.insert {
                 it[assistantId] = assistantIdInput
@@ -38,6 +40,19 @@ object BasicRepository {
                 it[content] = contentInput
             } get MessageThreadTable.messageId
         }
+        return id
+    }
+
+    fun insertRunRequests(runIdInput: String, threadIdInput: String): Int {
+        val id = transaction {
+            val now = LocalDateTime.now()
+            OpenAiRunRequestsTable.insert {
+                it[runId] = runIdInput
+                it[threadId] = threadIdInput
+                it[registeredDateTime] = now
+            } get OpenAiRunRequestsTable.uid
+        }
+
         return id
     }
 

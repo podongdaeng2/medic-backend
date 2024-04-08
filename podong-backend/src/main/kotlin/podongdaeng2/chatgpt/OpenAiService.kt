@@ -71,9 +71,11 @@ object OpenAiService { // by lazy 선언 쓰는법 알아와서 적절한데에 
             request = RunRequest(assistantId = AssistantId(dietAdvisorId.id)),
         )
 
-        // TODO: SAVE RUN
+        val runUid = BasicRepository.insertRunRequests(
+            runIdInput = run.id.id, threadIdInput = thread.id.id,
+        )
 
-        makeRunRequest(RequestTypeEnum.DIET_ADVISOR, run.uid)
+        makeRunRequest(RequestTypeEnum.DIET_ADVISOR, runUid)
 
         val intervalMillis = 8000L // TODO-ASYNC: delete after implementing async
         while (true) {
