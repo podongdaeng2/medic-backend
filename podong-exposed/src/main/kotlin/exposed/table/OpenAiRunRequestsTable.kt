@@ -9,6 +9,9 @@ object OpenAiRunRequestsTable : Table("openai_run_requests") {
     val uid: Column<Int> = integer("uid").autoIncrement()
     val runId: Column<String> = varchar("run_id", 50)
     val threadId: Column<String> = varchar("thread_id", 50)
+    val handleStartDateTime: Column<LocalDateTime?> = datetime("handle_start_datetime").nullable()
+    val handleCompletedDateTime: Column<LocalDateTime?> = datetime("handle_completed_datetime").nullable()
+    val retryCount: Column<Int> = integer("retry_count")
     val registeredDateTime: Column<LocalDateTime> = datetime("registered_datetime")
     override val primaryKey = PrimaryKey(uid)
 }

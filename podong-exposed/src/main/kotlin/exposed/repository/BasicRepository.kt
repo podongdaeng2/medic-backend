@@ -1,12 +1,15 @@
 package exposed.repository
 
+import exposed.model.RunRequest
 import exposed.table.AssistantsTable
 import exposed.table.MessageThreadTable
 import exposed.table.OpenAiRunRequestsTable
 import exposed.table.ThreadAssistantTable
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.sql.update
 import java.time.LocalDateTime
 
 object BasicRepository {
@@ -50,6 +53,8 @@ object BasicRepository {
                 it[runId] = runIdInput
                 it[threadId] = threadIdInput
                 it[registeredDateTime] = now
+                it[handleStartDateTime] = null
+                it[handleCompletedDateTime] = null
             } get OpenAiRunRequestsTable.uid
         }
 
@@ -61,6 +66,29 @@ object BasicRepository {
             AssistantsTable.selectAll().map {
                 it[AssistantsTable.openaiId] to it[AssistantsTable.model]
             }
+        }
+    }
+
+    fun selectNotStartedRunRequests(): List<RunRequest> {
+        return OpenAiRunRequestsTable.selectAll().where {
+            OpenAiRunRequestsTable.handleStartDateTime eq null
+        }.map {
+            RunRequest(
+                uid = it[OpenAiRunRequestsTable.uid],
+                runId = it[OpenAiRunRequestsTable.runId],
+                threadId = it[OpenAiRunRequestsTable.threadId],
+                handleStartDateTime = it[OpenAiRunRequestsTable.handleStartDateTime],
+                handleCompletedDateTime = it[OpenAiRunRequestsTable.handleCompletedDateTime],
+                retryCount = it[OpenAiRunRequestsTable.retryCount],
+                registeredDateTime = it[OpenAiRunRequestsTable.registeredDateTime],
+            )
+        }
+    }
+
+    fun updateHandleDateTimeOfRunRequest(uidInput: Int, handleStartDateTime: LocalDateTime?, handleCompleteDateTime: LocalDateTime?) {
+        OpenAiRunRequestsTable.update({ OpenAiRunRequestsTable.uid eq uidInput }) {
+            it[OpenAiRunRequestsTable.handleStartDateTime] = handleStartDateTime
+            it[OpenAiRunRequestsTable.handleCompletedDateTime] = handleCompleteDateTime
         }
     }
 }

@@ -5,23 +5,35 @@ import io.ktor.server.netty.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.coroutines.*
+import org.jetbrains.exposed.sql.transactions.transaction
 import java.time.Duration
+import java.time.LocalDateTime
 
 fun main() {
     embeddedServer(Netty, port = 8090) {
 //        val mutex = Mutex() // needed?
 
-        // Launch a background coroutine to perform continuous search
-        launch {
+        launch(Dispatchers.Default) { // TODO: check if this runs on multithread
             while (true) {
-                // Perform the search operation asynchronously
-                val result = withContext(Dispatchers.IO) {
-                    // DB or Redis search
-                    BasicRepository.selectAllAssistant()
-                }
-                println("Search result: $result")
+                val notStartedRunRequests = BasicRepository.selectNotStartedRunRequests()
+                val firstNotStartedRunRequest = notStartedRunRequests.first()
+                val handleStartDateTime = LocalDateTime.now()
+                BasicRepository.updateHandleDateTimeOfRunRequest(
+                    uidInput = firstNotStartedRunRequest.uid,
+                    handleStartDateTime = handleStartDateTime,
+                    handleCompleteDateTime = null,
+                )
 
-                // Wait for a specified interval before the next search
+                transaction {
+                    Thread.sleep(Duration.ofSeconds(30).toMillis()) // TODO: implement OpenAI API request
+
+                    BasicRepository.updateHandleDateTimeOfRunRequest(
+                        uidInput = firstNotStartedRunRequest.uid,
+                        handleStartDateTime = handleStartDateTime,
+                        handleCompleteDateTime = LocalDateTime.now(),
+                    )
+                }
+
                 delay(Duration.ofSeconds(10).toMillis())
             }
         }

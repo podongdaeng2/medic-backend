@@ -18,8 +18,9 @@ val ktorVersion = "2.3.9"
 
 dependencies {
 	implementation(project(":podong-exposed"))
+	implementation("org.jetbrains.exposed:exposed-core:$exposedVersion")
 
-	// for OpenAI - some might seem not, but it's dependency. how miserable.
+	// for OpenAI
 	runtimeOnly("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")
 	runtimeOnly("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.8.0")
 //	implementation("org.springframework.boot:spring-boot-starter-webflux:3.2.4")
