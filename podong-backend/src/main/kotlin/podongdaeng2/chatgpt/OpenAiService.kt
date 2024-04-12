@@ -24,6 +24,7 @@ import exposed.repository.BasicRepository
 import io.ktor.client.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
+import org.jetbrains.exposed.sql.transactions.transaction
 import podongdaeng2.enums.RequestTypeEnum
 import kotlin.time.Duration.Companion.seconds
 
@@ -53,13 +54,17 @@ object OpenAiService { // by lazy 선언 쓰는법 알아와서 적절한데에 
     @OptIn(BetaOpenAI::class)
     suspend fun talkDietAdvisor(talk: String): String {
         val dietAdvisorId = AssistantId("asst_7ubPljm7e2SXlTjCiJhXthbH") // TODO-MINOR: change to DB select
+
         val thread = openAI.thread()
-        // TODO: save all process? including checking completion?
-        BasicRepository.insertThread(
-            dietAdvisorId.id,
-            thread.id.id,
-        )
-        val messageRequested = openAI.message(
+        transaction {
+            // TODO: save all process? including checking completion?
+            BasicRepository.insertThread(
+                dietAdvisorId.id,
+                thread.id.id,
+            )
+        }
+
+        openAI.message(
             threadId = ThreadId(thread.id.id),
             request = MessageRequest(
                 role = Role.User,
@@ -71,11 +76,13 @@ object OpenAiService { // by lazy 선언 쓰는법 알아와서 적절한데에 
             request = RunRequest(assistantId = AssistantId(dietAdvisorId.id)),
         )
 
-        val runUid = BasicRepository.insertRunRequests(
-            runIdInput = run.id.id, threadIdInput = thread.id.id,
-        )
-
+        val runUid = transaction {
+            BasicRepository.insertRunRequests(
+                runIdInput = run.id.id, threadIdInput = thread.id.id,
+            )
+        }
         makeRunRequest(RequestTypeEnum.DIET_ADVISOR, runUid)
+
 
         val intervalMillis = 8000L // TODO-ASYNC: delete after implementing async
         while (true) {
@@ -101,12 +108,13 @@ object OpenAiService { // by lazy 선언 쓰는법 알아와서 적절한데에 
         println(latestMessage.content)
         println()
         openAI.delete(id = ThreadId(thread.id.id)) // TODO: DB delete
-
-        BasicRepository.insertMessage(
-            assistantIdInput = dietAdvisorId.id,
-            messageIdInput = latestMessage.id.id,
-            contentInput = latestMessage.content.toString()
-        )
+        transaction {
+            BasicRepository.insertMessage(
+                assistantIdInput = dietAdvisorId.id,
+                messageIdInput = latestMessage.id.id,
+                contentInput = latestMessage.content.toString()
+            )
+        }
         println("DONE REQUEST")
 
         return latestMessage.content.toString() // seems like ordered in descending order of time?
@@ -116,12 +124,13 @@ object OpenAiService { // by lazy 선언 쓰는법 알아와서 적절한데에 
     suspend fun talkMedicalGuesser(talk: String): String {
         val medicalGuesserId = AssistantId("asst_Yiv8sUTfvAioPRYYuveQ3ABm") // TODO-MINOR: change to DB select
         val thread = openAI.thread()
-        // TODO: save all process? including checking completion?
-        BasicRepository.insertThread(
-            medicalGuesserId.id,
-            thread.id.id,
-        )
-        val messageRequested = openAI.message(
+        transaction {
+            BasicRepository.insertThread(
+                medicalGuesserId.id,
+                thread.id.id,
+            )
+        }
+        openAI.message(
             threadId = ThreadId(thread.id.id),
             request = MessageRequest(
                 role = Role.User,
@@ -158,11 +167,13 @@ object OpenAiService { // by lazy 선언 쓰는법 알아와서 적절한데에 
         println()
         openAI.delete(id = ThreadId(thread.id.id)) // TODO: DB delete
 
-        BasicRepository.insertMessage(
-            assistantIdInput = medicalGuesserId.id,
-            messageIdInput = latestMessage.id.id,
-            contentInput = latestMessage.content.toString()
-        )
+        transaction {
+            BasicRepository.insertMessage(
+                assistantIdInput = medicalGuesserId.id,
+                messageIdInput = latestMessage.id.id,
+                contentInput = latestMessage.content.toString()
+            )
+        }
         println("DONE REQUEST")
 
         return latestMessage.toString() // seems like ordered in descending order of time?
@@ -177,7 +188,10 @@ object OpenAiService { // by lazy 선언 쓰는법 알아와서 적절한데에 
         val path = filePath.toPath()
         val file = openAI.file(
             request = FileUpload(
-                file = FileSource(path = path, fileSystem = FileSystem.RESOURCES), // automatically searches "/src/main/resources"
+                file = FileSource(
+                    path = path,
+                    fileSystem = FileSystem.RESOURCES
+                ), // automatically searches "/src/main/resources"
                 purpose = Purpose("assistants")
             )
         )
@@ -206,11 +220,13 @@ object OpenAiService { // by lazy 선언 쓰는법 알아와서 적절한데에 
                 """.trimIndent()
             )
         )
-        BasicRepository.insertAssistant(
-            openaiIdInput = assistant.id.id,
-            instructionInput = assistant.instructions,
-            modelInput = assistant.model.id,
-        )
+        transaction {
+            BasicRepository.insertAssistant(
+                openaiIdInput = assistant.id.id,
+                instructionInput = assistant.instructions,
+                modelInput = assistant.model.id,
+            )
+        }
     }
 
     @OptIn(BetaOpenAI::class)
@@ -248,11 +264,13 @@ object OpenAiService { // by lazy 선언 쓰는법 알아와서 적절한데에 
                 model = ModelId("gpt-3.5-turbo"),
             )
         )
-        BasicRepository.insertAssistant(
-            openaiIdInput = assistant.id.id,
-            instructionInput = assistant.instructions,
-            modelInput = assistant.model.id,
-        )
+        transaction {
+            BasicRepository.insertAssistant(
+                openaiIdInput = assistant.id.id,
+                instructionInput = assistant.instructions,
+                modelInput = assistant.model.id,
+            )
+        }
     }
 
     suspend fun makeRunRequest(requestTypeEnum: RequestTypeEnum, runUid: Int) {
@@ -260,7 +278,8 @@ object OpenAiService { // by lazy 선언 쓰는법 알아와서 적절한데에 
             // more config can be here
         }
         try {
-            val response: HttpResponse = client.get("http://localhost:8090/run-request/") // TODO: CHANGE AFTER SERVER PUBLISHING. may diff between environment
+            val response: HttpResponse =
+                client.get("http://localhost:8090/run-request/") // TODO: CHANGE AFTER SERVER PUBLISHING. may diff between environment
             println("Response from server: $response")
         } catch (e: Exception) {
             println("An error occurred: ${e.message}")

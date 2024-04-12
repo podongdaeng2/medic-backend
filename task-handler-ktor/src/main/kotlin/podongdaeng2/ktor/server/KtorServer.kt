@@ -10,31 +10,43 @@ import java.time.Duration
 import java.time.LocalDateTime
 
 fun main() {
+    val basicRepository = BasicRepository // TODO - 이게 최선인가?
     embeddedServer(Netty, port = 8090) {
 //        val mutex = Mutex() // needed?
 
-        launch(Dispatchers.Default) { // TODO: check if this runs on multithread
-            while (true) {
-                val notStartedRunRequests = BasicRepository.selectNotStartedRunRequests()
-                val firstNotStartedRunRequest = notStartedRunRequests.first()
-                val handleStartDateTime = LocalDateTime.now()
-                BasicRepository.updateHandleDateTimeOfRunRequest(
-                    uidInput = firstNotStartedRunRequest.uid,
-                    handleStartDateTime = handleStartDateTime,
-                    handleCompleteDateTime = null,
-                )
+        repeat(Runtime.getRuntime().availableProcessors()) {
+            launch(Dispatchers.Default) { // TODO: 8 threads, can be modified?
+                while (true) {
+                    val (firstNotStartedRunRequest, handleStartDateTime) = transaction {
+                        val notStartedRunRequests = basicRepository.selectNotStartedRunRequests()
+                        val firstNotStartedRunRequest = notStartedRunRequests.firstOrNull()
+                        val handleStartDateTime = LocalDateTime.now()
+                        if (firstNotStartedRunRequest != null) {
+                            println(firstNotStartedRunRequest.uid)
+                            basicRepository.updateHandleDateTimeOfRunRequest(
+                                uidInput = firstNotStartedRunRequest.uid,
+                                handleStartDateTime = handleStartDateTime,
+                                handleCompleteDateTime = null,
+                            )
+                        }
+                        Pair(firstNotStartedRunRequest, handleStartDateTime)
+                    }
 
-                transaction {
-                    Thread.sleep(Duration.ofSeconds(30).toMillis()) // TODO: implement OpenAI API request
+                    if (firstNotStartedRunRequest != null) {
+                        transaction {
+                            Thread.sleep(Duration.ofSeconds((Math.random() * 10).toLong()).toMillis()) // TODO: implement OpenAI API request
 
-                    BasicRepository.updateHandleDateTimeOfRunRequest(
-                        uidInput = firstNotStartedRunRequest.uid,
-                        handleStartDateTime = handleStartDateTime,
-                        handleCompleteDateTime = LocalDateTime.now(),
-                    )
+                            basicRepository.updateHandleDateTimeOfRunRequest(
+                                uidInput = firstNotStartedRunRequest.uid,
+                                handleStartDateTime = handleStartDateTime,
+                                handleCompleteDateTime = LocalDateTime.now(),
+                            )
+                        }
+                    } else {
+                        delay(Duration.ofSeconds(10).toMillis())
+                    }
+                    println("Loop done by server")
                 }
-
-                delay(Duration.ofSeconds(10).toMillis())
             }
         }
 

@@ -13,36 +13,35 @@ import org.jetbrains.exposed.sql.update
 import java.time.LocalDateTime
 
 object BasicRepository {
+    init {
+        ExposedDatabase.connect()
+    }
+
     // Exposed table name and argument of function should be different. 짜치네...
     fun insertAssistant(openaiIdInput: String, instructionInput: String?, modelInput: String): String {
-        val id = transaction {
-            AssistantsTable.insert {
-                it[openaiId] = openaiIdInput
-                it[instruction] = instructionInput
-                it[model] = modelInput
-            } get AssistantsTable.openaiId
-        }
+        val id = AssistantsTable.insert {
+            it[openaiId] = openaiIdInput
+            it[instruction] = instructionInput
+            it[model] = modelInput
+        } get AssistantsTable.openaiId
+
         return id
     }
 
     fun insertThread(assistantIdInput: String, threadIdInput: String): String {
-        val id = transaction {
-            ThreadAssistantTable.insert {
-                it[assistantId] = assistantIdInput
-                it[threadId] = threadIdInput
-            } get ThreadAssistantTable.threadId
-        }
+        val id = ThreadAssistantTable.insert {
+            it[assistantId] = assistantIdInput
+            it[threadId] = threadIdInput
+        } get ThreadAssistantTable.threadId
         return id
     }
 
     fun insertMessage(assistantIdInput: String, messageIdInput: String, contentInput: String): String {
-        val id = transaction {
-            MessageThreadTable.insert {
-                it[assistantId] = assistantIdInput
-                it[messageId] = messageIdInput
-                it[content] = contentInput
-            } get MessageThreadTable.messageId
-        }
+        val id = MessageThreadTable.insert {
+            it[assistantId] = assistantIdInput
+            it[messageId] = messageIdInput
+            it[content] = contentInput
+        } get MessageThreadTable.messageId
         return id
     }
 
@@ -55,6 +54,7 @@ object BasicRepository {
                 it[registeredDateTime] = now
                 it[handleStartDateTime] = null
                 it[handleCompletedDateTime] = null
+                it[retryCount] = 0
             } get OpenAiRunRequestsTable.uid
         }
 
@@ -62,17 +62,15 @@ object BasicRepository {
     }
 
     fun selectAllAssistant(): List<Pair<String, String>> {
-        return transaction {
-            AssistantsTable.selectAll().map {
-                it[AssistantsTable.openaiId] to it[AssistantsTable.model]
-            }
+        return AssistantsTable.selectAll().map {
+            it[AssistantsTable.openaiId] to it[AssistantsTable.model]
         }
     }
 
     fun selectNotStartedRunRequests(): List<RunRequest> {
         return OpenAiRunRequestsTable.selectAll().where {
             OpenAiRunRequestsTable.handleStartDateTime eq null
-        }.map {
+        }.forUpdate().map {
             RunRequest(
                 uid = it[OpenAiRunRequestsTable.uid],
                 runId = it[OpenAiRunRequestsTable.runId],
@@ -85,10 +83,16 @@ object BasicRepository {
         }
     }
 
-    fun updateHandleDateTimeOfRunRequest(uidInput: Int, handleStartDateTime: LocalDateTime?, handleCompleteDateTime: LocalDateTime?) {
-        OpenAiRunRequestsTable.update({ OpenAiRunRequestsTable.uid eq uidInput }) {
-            it[OpenAiRunRequestsTable.handleStartDateTime] = handleStartDateTime
-            it[OpenAiRunRequestsTable.handleCompletedDateTime] = handleCompleteDateTime
+    fun updateHandleDateTimeOfRunRequest(
+        uidInput: Int,
+        handleStartDateTime: LocalDateTime?,
+        handleCompleteDateTime: LocalDateTime?
+    ) {
+        transaction {
+            OpenAiRunRequestsTable.update({ OpenAiRunRequestsTable.uid eq uidInput }) {
+                it[OpenAiRunRequestsTable.handleStartDateTime] = handleStartDateTime
+                it[OpenAiRunRequestsTable.handleCompletedDateTime] = handleCompleteDateTime
+            }
         }
     }
 }

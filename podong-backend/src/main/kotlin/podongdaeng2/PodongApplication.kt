@@ -13,10 +13,7 @@ import org.springframework.boot.runApplication
 	exclude = [DataSourceTransactionManagerAutoConfiguration::class]
 )
 class PodongApplication {
-	init { // good position for database setup? sure?
-		Database.connect("jdbc:mysql://localhost:3306/podongdaeng2", driver = "com.mysql.cj.jdbc.Driver",
-			user = "root", password = "1234")
-	}
+
 }
 
 fun main(args: Array<String>) {
