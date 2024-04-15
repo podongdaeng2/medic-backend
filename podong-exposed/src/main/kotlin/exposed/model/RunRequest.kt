@@ -1,5 +1,6 @@
 package exposed.model
 
+import enums.ApiRequestTypeEnum
 import java.time.LocalDateTime
 
 data class RunRequest(
@@ -9,5 +10,6 @@ data class RunRequest(
     val handleStartDateTime: LocalDateTime?,
     val handleCompletedDateTime: LocalDateTime?,
     val retryCount: Int,
+    val apiType: ApiRequestTypeEnum,
     val registeredDateTime: LocalDateTime,
 )

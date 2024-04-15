@@ -25,7 +25,7 @@ import io.ktor.client.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import org.jetbrains.exposed.sql.transactions.transaction
-import podongdaeng2.enums.RequestTypeEnum
+import enums.ApiRequestTypeEnum
 import kotlin.time.Duration.Companion.seconds
 
 object OpenAiService { // by lazy 선언 쓰는법 알아와서 적절한데에 써야할수도
@@ -57,7 +57,6 @@ object OpenAiService { // by lazy 선언 쓰는법 알아와서 적절한데에 
 
         val thread = openAI.thread()
         transaction {
-            // TODO: save all process? including checking completion?
             BasicRepository.insertThread(
                 dietAdvisorId.id,
                 thread.id.id,
@@ -78,46 +77,13 @@ object OpenAiService { // by lazy 선언 쓰는법 알아와서 적절한데에 
 
         val runUid = transaction {
             BasicRepository.insertRunRequests(
-                runIdInput = run.id.id, threadIdInput = thread.id.id,
+                runIdInput = run.id.id,
+                threadIdInput = thread.id.id,
+                apiTypeInput = ApiRequestTypeEnum.DIET_ADVISOR,
             )
         }
-        makeRunRequest(RequestTypeEnum.DIET_ADVISOR, runUid)
 
-
-        val intervalMillis = 8000L // TODO-ASYNC: delete after implementing async
-        while (true) {
-            val currentRun = openAI.getRun(
-                threadId = ThreadId(thread.id.id),
-                runId = RunId(run.id.id)
-            )
-
-            if (currentRun.completedAt != null) {
-                println("RUN COMPLETED ${run.completedAt}")
-                break
-            } else if (currentRun.failedAt != null) {
-                // TODO: Handle failure
-                println("FAILED RUN!! ${run.failedAt}")
-                break
-            }
-            println()
-            delay(intervalMillis) // Wait for the specified interval before the next check
-        }
-
-        val latestMessage = openAI.messages(threadId = ThreadId(thread.id.id)).first()
-        println() // TODO-MINOR-DELETE: for logs, delete
-        println(latestMessage.content)
-        println()
-        openAI.delete(id = ThreadId(thread.id.id)) // TODO: DB delete
-        transaction {
-            BasicRepository.insertMessage(
-                assistantIdInput = dietAdvisorId.id,
-                messageIdInput = latestMessage.id.id,
-                contentInput = latestMessage.content.toString()
-            )
-        }
-        println("DONE REQUEST")
-
-        return latestMessage.content.toString() // seems like ordered in descending order of time?
+       return "openAI 요청 완료"
     }
 
     @OptIn(BetaOpenAI::class)
@@ -273,7 +239,7 @@ object OpenAiService { // by lazy 선언 쓰는법 알아와서 적절한데에 
         }
     }
 
-    suspend fun makeRunRequest(requestTypeEnum: RequestTypeEnum, runUid: Int) {
+    suspend fun makeRunRequest(requestTypeEnum: ApiRequestTypeEnum, runUid: Int) { // TODO-erase: won't use at a high  chance
         val client = HttpClient() {
             // more config can be here
         }

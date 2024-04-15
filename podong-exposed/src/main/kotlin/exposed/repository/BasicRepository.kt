@@ -1,11 +1,11 @@
 package exposed.repository
 
+import enums.ApiRequestTypeEnum
 import exposed.model.RunRequest
 import exposed.table.AssistantsTable
 import exposed.table.MessageThreadTable
 import exposed.table.OpenAiRunRequestsTable
 import exposed.table.ThreadAssistantTable
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -45,7 +45,7 @@ object BasicRepository {
         return id
     }
 
-    fun insertRunRequests(runIdInput: String, threadIdInput: String): Int {
+    fun insertRunRequests(runIdInput: String, threadIdInput: String, apiTypeInput: ApiRequestTypeEnum): Int {
         val id = transaction {
             val now = LocalDateTime.now()
             OpenAiRunRequestsTable.insert {
@@ -54,6 +54,7 @@ object BasicRepository {
                 it[registeredDateTime] = now
                 it[handleStartDateTime] = null
                 it[handleCompletedDateTime] = null
+                it[apiRequestType] = apiTypeInput
                 it[retryCount] = 0
             } get OpenAiRunRequestsTable.uid
         }
@@ -67,7 +68,7 @@ object BasicRepository {
         }
     }
 
-    fun selectNotStartedRunRequests(): List<RunRequest> {
+    fun selectForUpdateNotStartedRunRequests(): List<RunRequest> {
         return OpenAiRunRequestsTable.selectAll().where {
             OpenAiRunRequestsTable.handleStartDateTime eq null
         }.forUpdate().map {
@@ -78,6 +79,7 @@ object BasicRepository {
                 handleStartDateTime = it[OpenAiRunRequestsTable.handleStartDateTime],
                 handleCompletedDateTime = it[OpenAiRunRequestsTable.handleCompletedDateTime],
                 retryCount = it[OpenAiRunRequestsTable.retryCount],
+                apiType = it[OpenAiRunRequestsTable.apiRequestType],
                 registeredDateTime = it[OpenAiRunRequestsTable.registeredDateTime],
             )
         }

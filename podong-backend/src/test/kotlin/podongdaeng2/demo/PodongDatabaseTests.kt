@@ -1,5 +1,6 @@
 package podongdaeng2.demo
 
+import enums.ApiRequestTypeEnum
 import org.jetbrains.exposed.sql.Database
 import org.junit.Test
 import exposed.repository.BasicRepository
@@ -24,10 +25,12 @@ class PodongDatabaseTests {
 
     @Test
     fun makeRunRequests() {
-        repeat(50) {
+        repeat(20) {
             transaction {
                 BasicRepository.insertRunRequests(
-                    runIdInput = RandomString.make(15), threadIdInput = RandomString.make(15),
+                    runIdInput = RandomString.make(15),
+                    threadIdInput = RandomString.make(15),
+                    apiTypeInput = ApiRequestTypeEnum.DIET_ADVISOR,
                 )
             }
         }
