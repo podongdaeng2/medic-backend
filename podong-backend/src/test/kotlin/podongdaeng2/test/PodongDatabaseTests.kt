@@ -1,4 +1,4 @@
-package podongdaeng2.demo
+package podongdaeng2.test
 
 import enums.ApiRequestTypeEnum
 import org.jetbrains.exposed.sql.Database
