@@ -1,6 +1,6 @@
 package exposed.model
 
-enum class MealType(
+enum class MealTimeType(
     val mealTypeCode: String // code stated in raw csv
 ) {
     BREAKFAST("100001"),
@@ -11,9 +11,9 @@ enum class MealType(
     DINNER_SNACK("100006");
 
     companion object {
-        private val codeToMealTypeMap = entries.associateBy(MealType::mealTypeCode)
+        private val codeToMealTypeMap = entries.associateBy(MealTimeType::mealTypeCode)
 
-        fun fromCode(code: String): MealType? {
+        fun fromCode(code: String): MealTimeType? {
             return codeToMealTypeMap[code]
         }
     }

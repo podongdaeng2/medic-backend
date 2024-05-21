@@ -2,9 +2,12 @@ package podongdaeng2.test
 
 import exposed.model.FoodInfo
 import exposed.model.FoodIntake
-import exposed.model.MealType
+import exposed.model.MealTimeType
 import org.jetbrains.exposed.sql.Database
 import org.junit.Test
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.util.*
 
 
 class HealthDataTest {
@@ -20,7 +23,7 @@ class HealthDataTest {
         val rawFoodIntakeCsvData = """
             com.samsung.health.food_intake,1148009,3
             unit,pkg_name,amount,meal_type,time_offset,start_time,comment,calorie,deviceuuid,custom,food_info_id,datauuid,create_time,name,update_time
-            120001,com.sec.android.app.shealth,1.000000,100001,32400000,2024. 04. 05. 오후 7:40:45,,42.000000,EDuwZTVpg8,,2F210EDC-7D2C-4458-A1DE-70C052D22F12,2561E8A3-7A75-4547-8377-83B84E6C6BF5,2024. 04. 05. 오후 7:41:07,"커피,설탕,프림",2024. 04. 05. 오후 7:41:07,
+            120001,com.sec.android.app.shealth,1.000000,100001,32400000,2024. 04. 05. 오후 7:40:45,,42.000000,EDuwZTVpg8,,2F210EDC-7D2C-4458-A1DE-70C052D22F12,2561E8A3-7A75-4547-8377-83B84E6C6BF5,2024. 04. 05. 오후 7:41:07,""커피,설탕,프림"",2024. 04. 05. 오후 7:41:07,
             120001,com.sec.android.app.shealth,1.000000,100002,32400000,2024. 04. 05. 오후 12:00:00,,409.000000,EDuwZTVpg8,,5A598034-774B-4041-804B-8D1D7B63F406,B57EF298-BF39-4D7D-82A0-68662DFA6F39,2024. 04. 05. 오후 7:41:26,불고기버거(맥도날드 (McDonald's)),2024. 04. 05. 오후 7:41:26,
             120001,com.sec.android.app.shealth,1.000000,100003,32400000,2024. 04. 05. 오후 7:42:55,,92.000000,EDuwZTVpg8,,04B08720-3A27-4310-B499-71C13ABDC3D0,B070B96D-C25C-491A-B992-AC91DD0A744E,2024. 04. 05. 오후 7:44:00,콜라 (200ml)(코카콜라),2024. 04. 05. 오후 7:44:00,
             120001,com.sec.android.app.shealth,3.500000,100003,32400000,2024. 04. 05. 오후 7:42:55,,906.000000,EDuwZTVpg8,,A7F7347D-1642-49E6-8191-5DBF5598FEC2,5FEA49BF-8EEE-474A-9453-7FD0C41DBEC3,2024. 04. 05. 오후 7:44:00,양념치킨,2024. 04. 05. 오후 7:44:00,
@@ -33,9 +36,9 @@ class HealthDataTest {
             120001,com.sec.android.app.shealth,1.000000,100002,32400000,2024. 05. 20. 오후 3:02:05,,240.000000,EDuwZTVpg8,,8C697564-CA32-477E-AF44-FDF20DFB4B1A,AAD8B4E5-237A-49FC-80BF-7B0E6A8D9C23,2024. 05. 20. 오후 3:08:30,로스트 치킨 샐러드(파리바게트),2024. 05. 20. 오후 3:08:30,
             120001,com.sec.android.app.shealth,1.000000,100002,32400000,2024. 05. 20. 오후 3:02:05,,180.000000,EDuwZTVpg8,,546DAE67-1160-4FC8-952E-B7C4E5BA1DBA,AC408484-595C-4FD0-B51A-8C99E3B2AE3D,2024. 05. 20. 오후 3:08:30,Tri-Color Quinoa(Bob's Red Mill),2024. 05. 20. 오후 3:08:30,
             120001,com.sec.android.app.shealth,0.500000,100005,32400000,2024. 05. 20. 오후 3:02:05,,212.000000,EDuwZTVpg8,,1A6225E8-0D57-48D4-9A20-E53E657A93E0,F793928F-8E0F-4BC9-A6FA-C3260EC62F7E,2024. 05. 20. 오후 3:09:25,야채스틱(롯데제과),2024. 05. 20. 오후 3:09:25,
-            120001,com.sec.android.app.shealth,100.000000,100003,32400000,2024. 05. 20. 오후 3:02:05,,28.000000,EDuwZTVpg8,,0A3458D8-343C-41DC-A9AC-69641E0D4E86,D883337C-5E5F-4671-94B2-9882A196350F,2024. 05. 20. 오후 3:10:52,"익힌 브로콜리 (냉동, 요리시 지방추가)",2024. 05. 20. 오후 3:10:52,
+            120001,com.sec.android.app.shealth,100.000000,100003,32400000,2024. 05. 20. 오후 3:02:05,,28.000000,EDuwZTVpg8,,0A3458D8-343C-41DC-A9AC-69641E0D4E86,D883337C-5E5F-4671-94B2-9882A196350F,2024. 05. 20. 오후 3:10:52,""익힌 브로콜리 (냉동, 요리시 지방추가)"",2024. 05. 20. 오후 3:10:52,
             120001,com.sec.android.app.shealth,100.000000,100003,32400000,2024. 05. 20. 오후 3:02:05,,171.000000,EDuwZTVpg8,,5E30CE11-0A6F-41BE-84BA-A29181DCE887,27B57E22-6819-43A9-BCA7-144482690FA0,2024. 05. 20. 오후 3:10:52,연어구이,2024. 05. 20. 오후 3:10:52,
-            120001,com.sec.android.app.shealth,100.000000,100003,32400000,2024. 05. 20. 오후 3:02:05,,101.000000,EDuwZTVpg8,,8C12AB76-4298-4AE5-AA6A-FBC894B31790,FE9A05BB-B830-494C-A289-5B9B974B3423,2024. 05. 20. 오후 3:10:52,"고구마 (으깬, 통조림)",2024. 05. 20. 오후 3:10:52,
+            120001,com.sec.android.app.shealth,100.000000,100003,32400000,2024. 05. 20. 오후 3:02:05,,101.000000,EDuwZTVpg8,,8C12AB76-4298-4AE5-AA6A-FBC894B31790,FE9A05BB-B830-494C-A289-5B9B974B3423,2024. 05. 20. 오후 3:10:52,""고구마 (으깬, 통조림)"",2024. 05. 20. 오후 3:10:52,
             120001,com.sec.android.app.shealth,1.000000,100006,32400000,2024. 05. 20. 오후 3:11:42,,94.000000,EDuwZTVpg8,,2C729947-DCCC-4745-9701-157D30C6818A,FB91A400-9887-420E-8FBC-0D42CF7A506F,2024. 05. 20. 오후 3:11:45,땅콩 버터,2024. 05. 20. 오후 3:11:45,
             120001,com.sec.android.app.shealth,100.000000,100006,32400000,2024. 05. 20. 오후 3:11:42,,52.000000,EDuwZTVpg8,,0187EDFB-5F1E-4B99-B488-CF7F78E1E613,6A21F89C-8535-471F-B49F-8F58A40F1C08,2024. 05. 20. 오후 3:11:45,사과,2024. 05. 20. 오후 3:11:45,
             120001,com.sec.android.app.shealth,0.500000,100003,32400000,2024. 05. 20. 오후 3:02:05,,155.000000,EDuwZTVpg8,,69B4BE5C-6C56-45D1-A726-8FDC6DACE3BF,296A91E0-A767-4799-A0F6-3D1069BCE59E,2024. 05. 20. 오후 3:12:04,공기밥,2024. 05. 20. 오후 3:12:12,
@@ -56,8 +59,8 @@ class HealthDataTest {
             120001,com.sec.android.app.shealth,1.000000,100003,32400000,2024. 05. 18. 오후 6:00:00,,220.000000,EDuwZTVpg8,,DDDD9208-81C7-4F49-BF38-A120F0EBBA6A,8E1189F8-75D6-46A0-8592-CD5AC72AB192,2024. 05. 20. 오후 3:20:03,스파게티,2024. 05. 20. 오후 3:20:03,
             120001,com.sec.android.app.shealth,1.000000,100006,32400000,2024. 05. 18. 오후 9:00:00,,80.000000,EDuwZTVpg8,,E7C55DA3-BB22-4913-AB59-FE1A2810EE33,0AF2C5AB-324C-4011-991B-22765B385EDB,2024. 05. 20. 오후 3:20:19,캔디 바 구이 카라멜 피넛(퀘스트뉴트리션),2024. 05. 20. 오후 3:20:19,
             120001,com.sec.android.app.shealth,1.000000,100006,32400000,2024. 05. 18. 오후 9:00:00,,85.000000,EDuwZTVpg8,,4A663805-230B-4A73-938D-BDBFC955D0BC,C152DB45-65F9-42DA-87F3-B3C9B7373C97,2024. 05. 20. 오후 3:20:32,사이다 (200ml)(칠성),2024. 05. 20. 오후 3:20:32,
-            
-            
+
+
         """.trimIndent()
 
         val rawFoodInfoCsvData = """
@@ -115,7 +118,7 @@ class HealthDataTest {
         val rawFoodIntakeStringList = rawFoodIntakeCsvData
             .split("\n")
             .map {
-                it.split("(?<!\"\"),(?![^\"].*\"\")".toRegex())
+                it.split(""",(?=(?:[^"]*""[^"]*"")*[^"]*$)""".toRegex())
             }
             .drop(2)
             .filter { it.size > 1 }
@@ -127,18 +130,19 @@ class HealthDataTest {
             .drop(2)
             .filter { it.size > 1 }
 
-        println(rawFoodIntakeStringList)
-        println(rawFoodInfoStringList)
+        val formatter = DateTimeFormatter.ofPattern("yyyy. MM. dd. a h:mm:ss", Locale.KOREA)
+
 
         val foodIntakeList = rawFoodIntakeStringList.map {
             FoodIntake(
                 foodInfoId = it[10],
                 dataUuid = it[11],
                 name = it[13],
-                mealType = MealType.fromCode(it[3]),
+                mealTimeType = MealTimeType.fromCode(it[3]),
                 amount = it[2].toDouble(),
                 comment = it[6],
                 calorie = it[7].toDouble(),
+                eatenDate = LocalDate.parse(it[5], formatter)
             )
         }
 
@@ -173,7 +177,16 @@ class HealthDataTest {
             )
         }
 
-        println(foodIntakeList)
-        println(foodInfoList)
+        val foodIntakeToFoodInfoList = foodIntakeList.map { foodIntake ->
+            foodIntake to foodInfoList.single { it.dataUuid == foodIntake.foodInfoId } // may use hash
+        }
+
+        val foodIntakeByEachMealTimeTypeAndDay = foodIntakeToFoodInfoList.groupBy { Pair(it.first.eatenDate, it.first.mealTimeType) }
+
+        foodIntakeByEachMealTimeTypeAndDay.forEach { (eatenDate, mealTimeType), eachFoodIntakeToFoodInfoList ->
+            println(eatenDate)
+            println(mealTimeType)
+            println(eachFoodIntakeToFoodInfoList.sumOf { it.second.calorie })
+        }
     }
 }
