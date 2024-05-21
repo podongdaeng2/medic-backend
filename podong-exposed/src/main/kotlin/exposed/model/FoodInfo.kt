@@ -1,4 +1,29 @@
 package exposed.model
 
-class FoodInfo {
-}
+data class FoodInfo(
+    val dataUuid: String,
+    val name: String,
+    val cholesterol: Double,
+    val servingDescription: String?,
+    val potassium: Double,
+    val sodium: Double,
+    val transFat: Double,
+    val carbohydrate: Double,
+    val metricServingAmount: Double?,
+    val calcium: Double,
+    val monosaturatedFat: Double,
+    val sugar: Double,
+    val saturatedFat: Double,
+    val unitCountPerCalorie: Double?,
+    val vitaminA: Double,
+    val metricServingUnit: String?,
+    val vitaminC: Double,
+    val calorie: Double,
+    val protein: Double,
+    val totalFat: Double,
+    val dietaryFiber: Double,
+    val iron: Double,
+    val polysaturatedFat: Double,
+    val defaultNumberOfServingUnit: Int?,
+    val description: String?,
+)

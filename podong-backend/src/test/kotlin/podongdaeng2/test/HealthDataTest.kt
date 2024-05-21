@@ -1,11 +1,10 @@
 package podongdaeng2.test
 
-import enums.ApiRequestTypeEnum
+import exposed.model.FoodInfo
+import exposed.model.FoodIntake
+import exposed.model.MealType
 import org.jetbrains.exposed.sql.Database
 import org.junit.Test
-import exposed.repository.BasicRepository
-import net.bytebuddy.utility.RandomString
-import org.jetbrains.exposed.sql.transactions.transaction
 
 
 class HealthDataTest {
@@ -108,24 +107,73 @@ class HealthDataTest {
             0.000000,개,51.000000,26.000000,2024. 05. 20. 오후 3:19:38,EDuwZTVpg8,,0.000000,16.130000,,fatsecret-3964,25,1.000000,1.292000,초코쿠키,A00F8049-A8E9-44A7-B308-575B81F4961C,11.490000,1.146000,0.255102,3.000000,g,0.000000,98.000000,1.310000,3.480000,0.900000,2.000000,2024. 05. 20. 오후 3:19:38,com.sec.android.app.shealth,0.837000,1,""3827 kcal, 981 g당"",
             0.000000,""컵, 요리된"",63.000000,325.000000,2024. 05. 20. 오후 3:20:03,EDuwZTVpg8,,0.000000,42.950000,,fatsecret-4424,140,1.000000,0.182000,스파게티,DDDD9208-81C7-4F49-BF38-A120F0EBBA6A,0.780000,0.245000,0.636364,0.000000,g,0.000000,220.000000,8.060000,1.290000,2.500000,10.000000,2024. 05. 20. 오후 3:20:03,com.sec.android.app.shealth,0.444000,1,""158 kcal, 101 g당"",
             0.000000,인분,80.000000,60.000000,2024. 05. 20. 오후 3:20:19,EDuwZTVpg8,,0.000000,1.000000,,fatsecret-56435140,21,0.000000,0.000000,캔디 바 구이 카라멜 피넛(퀘스트뉴트리션),E7C55DA3-BB22-4913-AB59-FE1A2810EE33,0.000000,3.000000,0.262500,0.000000,g,0.000000,80.000000,5.000000,6.000000,4.000000,0.000000,2024. 05. 20. 오후 3:20:19,com.sec.android.app.shealth,0.000000,1,""80 kcal, 1 개 (21  g)당"",
-            
-            
+
+
         """.trimIndent()
 
-        // split to line then split with comma,
+        // split to line then split with comma
         val rawFoodIntakeStringList = rawFoodIntakeCsvData
             .split("\n")
-            .drop(2)
             .map {
-                it.split(""",(?![^"]*"\B)""".toRegex())
+                it.split("(?<!\"\"),(?![^\"].*\"\")".toRegex())
             }
+            .drop(2)
+            .filter { it.size > 1 }
         val rawFoodInfoStringList = rawFoodInfoCsvData
             .split("\n")
-            .drop(2)
             .map {
-                it.split(""",(?![^"]*"\B)""".toRegex())
+                it.split(""",(?=(?:[^"]*""[^"]*"")*[^"]*$)""".toRegex())
             }
+            .drop(2)
+            .filter { it.size > 1 }
 
         println(rawFoodIntakeStringList)
+        println(rawFoodInfoStringList)
+
+        val foodIntakeList = rawFoodIntakeStringList.map {
+            FoodIntake(
+                foodInfoId = it[10],
+                dataUuid = it[11],
+                name = it[13],
+                mealType = MealType.fromCode(it[3]),
+                amount = it[2].toDouble(),
+                comment = it[6],
+                calorie = it[7].toDouble(),
+            )
+        }
+
+
+        val foodInfoList = rawFoodInfoStringList.map {
+            FoodInfo(
+                dataUuid = it[15],
+                name = it[14],
+                cholesterol = it[0].toDouble(),
+                servingDescription = it[1],
+                potassium = it[2].toDouble(),
+                sodium = it[3].toDouble(),
+                transFat = it[7].toDouble(),
+                carbohydrate = it[8].toDouble(),
+                metricServingAmount = it[11].toDoubleOrNull(),
+                calcium = it[12].toDouble(),
+                monosaturatedFat = it[13].toDouble(),
+                sugar = it[16].toDouble(),
+                saturatedFat = it[17].toDouble(),
+                unitCountPerCalorie = it[18].toDoubleOrNull(),
+                vitaminA = it[19].toDouble(),
+                metricServingUnit = it[20],
+                vitaminC = it[21].toDouble(),
+                calorie = it[22].toDouble(),
+                protein = it[23].toDouble(),
+                totalFat = it[24].toDouble(),
+                dietaryFiber = it[25].toDouble(),
+                iron = it[26].toDouble(),
+                polysaturatedFat = it[29].toDouble(),
+                defaultNumberOfServingUnit = it[30].toIntOrNull(),
+                description = it[31],
+            )
+        }
+
+        println(foodIntakeList)
+        println(foodInfoList)
     }
 }
