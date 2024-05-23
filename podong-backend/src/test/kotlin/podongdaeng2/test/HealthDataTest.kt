@@ -181,12 +181,40 @@ class HealthDataTest {
             foodIntake to foodInfoList.single { it.dataUuid == foodIntake.foodInfoId } // may use hash
         }
 
-        val foodIntakeByEachMealTimeTypeAndDay = foodIntakeToFoodInfoList.groupBy { Pair(it.first.eatenDate, it.first.mealTimeType) }
+        val foodIntakeListByEachMealTimeTypeAndDayMap = foodIntakeToFoodInfoList.groupBy { Pair(it.first.eatenDate, it.first.mealTimeType) }
 
-        foodIntakeByEachMealTimeTypeAndDay.forEach { (eatenDate, mealTimeType), eachFoodIntakeToFoodInfoList ->
-            println(eatenDate)
-            println(mealTimeType)
-            println(eachFoodIntakeToFoodInfoList.sumOf { it.second.calorie })
+        val finalStringInputForOpenAI = foodIntakeListByEachMealTimeTypeAndDayMap.map { foodIntakeListByEachMealTimeTypeAndDay ->
+            val (eatenDate, mealTimeType) = foodIntakeListByEachMealTimeTypeAndDay.key
+            val eachFoodIntakeToFoodInfoList = foodIntakeListByEachMealTimeTypeAndDay.value
+            val userInfo = "172cm, 80kg, male\n" // TODO
+            val foodListString = eachFoodIntakeToFoodInfoList.map {
+                it.second.name
+            }.joinToString(postfix = "\n")
+            val stringInputForOpenAI = """
+                Date: $eatenDate, Type: $mealTimeType
+                user info: $userInfo
+                Foods eaten: $foodListString
+                
+                calorie: ${eachFoodIntakeToFoodInfoList.sumOf { it.second.calorie }}
+                cholesterol: ${eachFoodIntakeToFoodInfoList.sumOf { it.second.cholesterol }}
+                potassium: ${eachFoodIntakeToFoodInfoList.sumOf { it.second.potassium }}
+                sodium: ${eachFoodIntakeToFoodInfoList.sumOf { it.second.sodium }}
+                trans_fat: ${eachFoodIntakeToFoodInfoList.sumOf { it.second.transFat }}
+                carbohydrate: ${eachFoodIntakeToFoodInfoList.sumOf { it.second.carbohydrate }}
+                calcium: ${eachFoodIntakeToFoodInfoList.sumOf { it.second.calcium }}
+                monosaturated_fat: ${eachFoodIntakeToFoodInfoList.sumOf { it.second.monosaturatedFat }}
+                saturated_fat: ${eachFoodIntakeToFoodInfoList.sumOf { it.second.saturatedFat }}
+                sugar: ${eachFoodIntakeToFoodInfoList.sumOf { it.second.sugar }}
+                vitamin_a: ${eachFoodIntakeToFoodInfoList.sumOf { it.second.vitaminA }}
+                vitamin_c: ${eachFoodIntakeToFoodInfoList.sumOf { it.second.vitaminC }}
+                protein: ${eachFoodIntakeToFoodInfoList.sumOf { it.second.protein }}
+                total_fat: ${eachFoodIntakeToFoodInfoList.sumOf { it.second.totalFat }}
+                dietary_fiber: ${eachFoodIntakeToFoodInfoList.sumOf { it.second.dietaryFiber }}
+                iron: ${eachFoodIntakeToFoodInfoList.sumOf { it.second.iron }}
+                polysaturated_fat: ${eachFoodIntakeToFoodInfoList.sumOf { it.second.polysaturatedFat }}
+            """.trimIndent()
+            stringInputForOpenAI
         }
+        println(finalStringInputForOpenAI)
     }
 }
