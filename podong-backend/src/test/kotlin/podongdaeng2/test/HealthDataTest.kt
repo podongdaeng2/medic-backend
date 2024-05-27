@@ -187,6 +187,7 @@ class HealthDataTest {
             val (eatenDate, mealTimeType) = foodIntakeListByEachMealTimeTypeAndDay.key
             val eachFoodIntakeToFoodInfoList = foodIntakeListByEachMealTimeTypeAndDay.value
             val userInfo = "172cm, 80kg, male\n" // TODO
+            val userInput = "단백질이 많은 식단으로 먹고 싶어"
             val foodListString = eachFoodIntakeToFoodInfoList.map {
                 it.second.name
             }.joinToString(postfix = "\n")
