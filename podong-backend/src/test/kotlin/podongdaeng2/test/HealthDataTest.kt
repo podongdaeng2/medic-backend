@@ -19,7 +19,7 @@ class HealthDataTest {
     }
 
     @Test
-    fun exposedSelect() {
+    fun healthDataTest() {
         val rawFoodIntakeCsvData = """
             com.samsung.health.food_intake,1148009,3
             unit,pkg_name,amount,meal_type,time_offset,start_time,comment,calorie,deviceuuid,custom,food_info_id,datauuid,create_time,name,update_time
@@ -181,20 +181,24 @@ class HealthDataTest {
             foodIntake to foodInfoList.single { it.dataUuid == foodIntake.foodInfoId } // may use hash
         }
 
-        val foodIntakeListByEachMealTimeTypeAndDayMap = foodIntakeToFoodInfoList.groupBy { Pair(it.first.eatenDate, it.first.mealTimeType) }
+        val foodIntakeListByEachMealTimeTypeAndDayMap =
+            foodIntakeToFoodInfoList.groupBy { Pair(it.first.eatenDate, it.first.mealTimeType) }
 
-        val finalStringInputForOpenAI = foodIntakeListByEachMealTimeTypeAndDayMap.map { foodIntakeListByEachMealTimeTypeAndDay ->
-            val (eatenDate, mealTimeType) = foodIntakeListByEachMealTimeTypeAndDay.key
-            val eachFoodIntakeToFoodInfoList = foodIntakeListByEachMealTimeTypeAndDay.value
-            val userInfo = "172cm, 80kg, male\n" // TODO
-            val userInput = "단백질이 많은 식단으로 먹고 싶어"
-            val foodListString = eachFoodIntakeToFoodInfoList.map {
-                it.second.name
-            }.joinToString(postfix = "\n")
-            val stringInputForOpenAI = """
+        val finalStringInputForOpenAI =
+            foodIntakeListByEachMealTimeTypeAndDayMap.map { foodIntakeListByEachMealTimeTypeAndDay ->
+                val (eatenDate, mealTimeType) = foodIntakeListByEachMealTimeTypeAndDay.key
+                val eachFoodIntakeToFoodInfoList = foodIntakeListByEachMealTimeTypeAndDay.value
+                val userInfo = "172cm, 80kg, male\n" // TODO
+                val userInput = "단백질이 많은 식단으로 먹고 싶어"
+                val foodListString = eachFoodIntakeToFoodInfoList.map {
+                    it.second.name
+                }.joinToString(postfix = "\n")
+                val stringInputForOpenAI = """
+                
                 Date: $eatenDate, Type: $mealTimeType
                 user info: $userInfo
                 Foods eaten: $foodListString
+                user input: $userInput
                 
                 calorie: ${eachFoodIntakeToFoodInfoList.sumOf { it.second.calorie }}
                 cholesterol: ${eachFoodIntakeToFoodInfoList.sumOf { it.second.cholesterol }}
@@ -213,9 +217,53 @@ class HealthDataTest {
                 dietary_fiber: ${eachFoodIntakeToFoodInfoList.sumOf { it.second.dietaryFiber }}
                 iron: ${eachFoodIntakeToFoodInfoList.sumOf { it.second.iron }}
                 polysaturated_fat: ${eachFoodIntakeToFoodInfoList.sumOf { it.second.polysaturatedFat }}
+                
+            """.trimIndent()
+                stringInputForOpenAI
+            }
+
+        val foodIntakeToFoodInfoListByEatenDate = foodIntakeToFoodInfoList.groupBy { it.first.eatenDate }
+        val stringOutputPerDate = foodIntakeToFoodInfoListByEatenDate.map { eachFoodIntakeToFoodInfoListByEatenDate ->
+            val eatenDate = eachFoodIntakeToFoodInfoListByEatenDate.key
+            val foodIntakeToFoodInfoList = eachFoodIntakeToFoodInfoListByEatenDate.value
+            val userInfo = "172cm, 80kg, male" // TODO
+            val userInput = "단백질이 많은 식단으로 먹고 싶어"
+            val foodListString = foodIntakeToFoodInfoList
+                .groupBy { it.first.mealTimeType }
+                .map { (mealTimeType, foodInfoToFoodIntake) ->
+                    mealTimeType.toString() + ": " +
+                    foodInfoToFoodIntake.joinToString {
+                        it.first.name
+                    }
+                }.joinToString(postfix = "\n")
+            val stringInputForOpenAI = """
+                Date: $eatenDate
+                user info: $userInfo
+                Foods eaten: $foodListString
+                user input: $userInput
+                
+                calorie: ${foodIntakeToFoodInfoList.sumOf { it.second.calorie }}
+                cholesterol: ${foodIntakeToFoodInfoList.sumOf { it.second.cholesterol }}
+                potassium: ${foodIntakeToFoodInfoList.sumOf { it.second.potassium }}
+                sodium: ${foodIntakeToFoodInfoList.sumOf { it.second.sodium }}
+                trans_fat: ${foodIntakeToFoodInfoList.sumOf { it.second.transFat }}
+                carbohydrate: ${foodIntakeToFoodInfoList.sumOf { it.second.carbohydrate }}
+                calcium: ${foodIntakeToFoodInfoList.sumOf { it.second.calcium }}
+                monosaturated_fat: ${foodIntakeToFoodInfoList.sumOf { it.second.monosaturatedFat }}
+                saturated_fat: ${foodIntakeToFoodInfoList.sumOf { it.second.saturatedFat }}
+                sugar: ${foodIntakeToFoodInfoList.sumOf { it.second.sugar }}
+                vitamin_a: ${foodIntakeToFoodInfoList.sumOf { it.second.vitaminA }}
+                vitamin_c: ${foodIntakeToFoodInfoList.sumOf { it.second.vitaminC }}
+                protein: ${foodIntakeToFoodInfoList.sumOf { it.second.protein }}
+                total_fat: ${foodIntakeToFoodInfoList.sumOf { it.second.totalFat }}
+                dietary_fiber: ${foodIntakeToFoodInfoList.sumOf { it.second.dietaryFiber }}
+                iron: ${foodIntakeToFoodInfoList.sumOf { it.second.iron }}
+                polysaturated_fat: ${foodIntakeToFoodInfoList.sumOf { it.second.polysaturatedFat }}
             """.trimIndent()
             stringInputForOpenAI
         }
-        println(finalStringInputForOpenAI)
+
+//        println(finalStringInputForOpenAI)
+        println(stringOutputPerDate.joinToString(separator = "\n"))
     }
 }

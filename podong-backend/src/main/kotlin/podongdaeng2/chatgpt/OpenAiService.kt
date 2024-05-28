@@ -184,12 +184,12 @@ object OpenAiService { // by lazy 선언 쓰는법 알아와서 적절한데에 
                     - give recommendations for these categories: next meal to eat, several exercise name to recommend, and overall health advice solutions.
                     - if specific nutrition taken is high or low, select recommendations to balance it. if this is done, comment it in overall advice. 
                     - give some side dishes when recommending meal.
-                    - exercise recommendation should include detail sets and times.
+                    - exercise recommendation should include detailed sets and times.
                     - Meal recommendation and exercise must reflect personal opinion.
                     - overall health advice can give side options for health.
 
                     # STYLE #
-                    write it in an intuitive and easy-to-understand style, without commanding-style
+                    write it in without commanding-style
 
                     # TONE #
                     positive and encouraging tone
@@ -200,38 +200,20 @@ object OpenAiService { // by lazy 선언 쓰는법 알아와서 적절한데에 
                     # RESPONSE #
                     Do not use special character, but divide each category with linebreak character at the end. recommending meal or exercises should be divided in comma, but not at the end. respond in Korean.
                     
-                    here is example of converstaions:
-                    
+                    here is example of conversations:
                     #
-                    personal opinion: 저염 음식이 먹고싶고, 운동은 격렬하게 할래
+                    다음 식사 추천
+                    단백질이 풍부한 두부 스테이크, 구운 닭가슴살, 퀴노아 샐러드, 삶은 달걀
+                    곁들일 수 있는 반찬으로는 나물무침, 김치, 오이무침을 추천드립니다
                     
-                    다음 식사 추천:
-                    현미밥, 구운 연어, 미소 된장국, 오이 무침, 김치
+                    운동 추천
+                    상체 운동: 푸쉬업 3세트, 각각 12회
+                    하체 운동: 스쿼트 3세트, 각각 15회
+                    유산소 운동: 걷기 30분, 일주일에 3회
                     
-                    운동 추천:
-                    HIIT (고강도 인터벌 트레이닝) - 20분 (1분 운동, 1분 휴식)
-                    스쿼트 - 3세트, 각 세트당 15회
-                    푸쉬업 - 3세트, 각 세트당 15회
-                    
-                    전체 건강 조언:
-                    당분 섭취를 줄이는 것이 좋겠어요. 오늘 섭취한 당분이 많으니 내일은 과일과 채소로 대체하는 것을 추천합니다. 또한, 비타민 A와 C의 섭취를 늘려보세요. 당근이나 파프리카를 식단에 추가하는 것이 좋습니다. 유연성 운동을 하면서 전반적인 스트레스 관리도 신경 써주세요.
-                    꾸준히 건강한 식습관을 유지하고 다양한 영양소를 섭취하며 유연성 운동을 통해 몸과 마음의 균형을 맞춰보세요.
+                    전체적인 건강 조언
+                    단백질 섭취를 늘리고 염분을 줄이는 식단을 잘 유지하고 계신 점이 아주 좋습니다. 다음 식사로는 단백질이 풍부하고 염분이 적은 식품들을 추천드렸습니다. 운동은 전신을 고루 강화할 수 있는 상체와 하체 운동을 포함하여, 유산소 운동도 함께 하여 심폐 건강을 챙기세요. 추가적으로 충분한 수분 섭취와 규칙적인 수면도 중요합니다. 건강한 식단과 운동을 꾸준히 이어가시면 더욱 건강한 삶을 유지하실 수 있을 것입니다.
                     #
-                    
-                    #
-                    personal opinion: 라면과 관련한 음식이 먹고싶고, 운동은 가벼운걸로 할래
-                    
-                    다음 식사 추천: 
-                    참깨라면, 김치, 삶은 계란, 오이무침, 두부조림
-                    
-                    운동 추천:
-                    걷기: 30분
-                    스트레칭: 10분
-                    
-                    전반적인 건강 조언:
-                    현재 섭취한 식사에서 당분과 나트륨이 높으므로 다음 식사에서는 야채와 과일을 포함한 식단을 추천합니다.
-                    물을 많이 마시고, 가벼운 운동을 꾸준히 해보세요.
-                    라면을 먹고 싶다면, 저염 라면을 선택하거나 야채를 추가해서 드세요.
                 """.trimIndent()
             )
         )
@@ -259,13 +241,12 @@ object OpenAiService { // by lazy 선언 쓰는법 알아와서 적절한데에 
                     - give recommendations for these categories: next meal to eat, several exercise name to recommend, and overall health advice solutions.
                     - if specific nutrition taken is high or low, select recommendations to balance it. if this is done, comment it in overall advice. 
                     - give some side dishes when recommending meal.
-                    - exercise recommendation should include detail sets and times.
-                    - Also, do not give additional description for meals and exercise, only give name of each subject. 
+                    - exercise recommendation should include detailed sets and times.
                     - Meal recommendation and exercise must reflect personal opinion.
                     - overall health advice can give side options for health.
 
                     # STYLE #
-                    write it in an intuitive and easy-to-understand style, without commanding-style
+                    write it in without commanding-style
 
                     # TONE #
                     positive and encouraging tone
@@ -276,37 +257,19 @@ object OpenAiService { // by lazy 선언 쓰는법 알아와서 적절한데에 
                     # RESPONSE #
                     Do not use special character, but divide each category with linebreak character at the end. recommending meal or exercises should be divided in comma, but not at the end. respond in Korean.
                     
-                    Example of conversations:
+                    here is example of conversations:
                     #
-                    personal opinion: 저염 음식이 먹고싶고, 운동은 격렬하게 할래
+                    다음 식사 추천
+                    단백질이 풍부한 두부 스테이크, 구운 닭가슴살, 퀴노아 샐러드, 삶은 달걀
+                    곁들일 수 있는 반찬으로는 나물무침, 김치, 오이무침을 추천드립니다
                     
-                    다음 식사 추천:
-                    현미밥, 구운 연어, 미소 된장국, 오이 무침, 김치
+                    운동 추천
+                    상체 운동: 푸쉬업 3세트, 각각 12회
+                    하체 운동: 스쿼트 3세트, 각각 15회
+                    유산소 운동: 걷기 30분, 일주일에 3회
                     
-                    운동 추천:
-                    HIIT (고강도 인터벌 트레이닝) - 20분 (1분 운동, 1분 휴식)
-                    스쿼트 - 3세트, 각 세트당 15회
-                    푸쉬업 - 3세트, 각 세트당 15회
-                    
-                    전체 건강 조언:
-                    당분 섭취를 줄이는 것이 좋겠어요. 오늘 섭취한 당분이 많으니 내일은 과일과 채소로 대체하는 것을 추천합니다. 또한, 비타민 A와 C의 섭취를 늘려보세요. 당근이나 파프리카를 식단에 추가하는 것이 좋습니다. 유연성 운동을 하면서 전반적인 스트레스 관리도 신경 써주세요.
-                    꾸준히 건강한 식습관을 유지하고 다양한 영양소를 섭취하며 유연성 운동을 통해 몸과 마음의 균형을 맞춰보세요.
-                    #
-                    
-                    #
-                    personal opinion: 라면과 관련한 음식이 먹고싶고, 운동은 가벼운걸로 할래
-                    
-                    다음 식사 추천: 
-                    참깨라면, 김치, 삶은 계란, 오이무침, 두부조림
-                    
-                    운동 추천:
-                    걷기: 30분
-                    스트레칭: 10분
-                    
-                    전반적인 건강 조언:
-                    현재 섭취한 식사에서 당분과 나트륨이 높으므로 다음 식사에서는 야채와 과일을 포함한 식단을 추천합니다.
-                    물을 많이 마시고, 가벼운 운동을 꾸준히 해보세요.
-                    라면을 먹고 싶다면, 저염 라면을 선택하거나 야채를 추가해서 드세요.
+                    전체적인 건강 조언
+                    단백질 섭취를 늘리고 염분을 줄이는 식단을 잘 유지하고 계신 점이 아주 좋습니다. 다음 식사로는 단백질이 풍부하고 염분이 적은 식품들을 추천드렸습니다. 운동은 전신을 고루 강화할 수 있는 상체와 하체 운동을 포함하여, 유산소 운동도 함께 하여 심폐 건강을 챙기세요. 추가적으로 충분한 수분 섭취와 규칙적인 수면도 중요합니다. 건강한 식단과 운동을 꾸준히 이어가시면 더욱 건강한 삶을 유지하실 수 있을 것입니다.
                     #
                 """.trimIndent(),
                 tools = listOf(),
