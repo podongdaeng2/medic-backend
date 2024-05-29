@@ -227,7 +227,7 @@ class HealthDataTest {
             val eatenDate = eachFoodIntakeToFoodInfoListByEatenDate.key
             val foodIntakeToFoodInfoList = eachFoodIntakeToFoodInfoListByEatenDate.value
             val userInfo = "172cm, 80kg, male" // TODO
-            val userInput = "단백질이 많은 식단으로 먹고 싶어"
+            val userInput = "no user input"
             val foodListString = foodIntakeToFoodInfoList
                 .groupBy { it.first.mealTimeType }
                 .map { (mealTimeType, foodInfoToFoodIntake) ->
@@ -235,7 +235,7 @@ class HealthDataTest {
                     foodInfoToFoodIntake.joinToString {
                         it.first.name
                     }
-                }.joinToString(postfix = "\n")
+                }.joinToString()
             val stringInputForOpenAI = """
                 Date: $eatenDate
                 user info: $userInfo
