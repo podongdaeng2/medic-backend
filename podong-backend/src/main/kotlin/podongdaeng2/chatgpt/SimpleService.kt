@@ -105,16 +105,16 @@ object SimpleService {
                 sodium: ${foodIntakeToFoodInfoList.sumOf { it.second.sodium }}
                 trans_fat: ${foodIntakeToFoodInfoList.sumOf { it.second.transFat }}
                 carbohydrate: ${foodIntakeToFoodInfoList.sumOf { it.second.carbohydrate }}
-                calcium: ${foodIntakeToFoodInfoList.sumOf { it.second.calcium }}
+                calcium: ${foodIntakeToFoodInfoList.sumOf { it.second.calcium }}%
                 monosaturated_fat: ${foodIntakeToFoodInfoList.sumOf { it.second.monosaturatedFat }}
                 saturated_fat: ${foodIntakeToFoodInfoList.sumOf { it.second.saturatedFat }}
                 sugar: ${foodIntakeToFoodInfoList.sumOf { it.second.sugar }}
-                vitamin_a: ${foodIntakeToFoodInfoList.sumOf { it.second.vitaminA }}
-                vitamin_c: ${foodIntakeToFoodInfoList.sumOf { it.second.vitaminC }}
+                vitamin_a: ${foodIntakeToFoodInfoList.sumOf { it.second.vitaminA }}%
+                vitamin_c: ${foodIntakeToFoodInfoList.sumOf { it.second.vitaminC }}%
                 protein: ${foodIntakeToFoodInfoList.sumOf { it.second.protein }}
                 total_fat: ${foodIntakeToFoodInfoList.sumOf { it.second.totalFat }}
                 dietary_fiber: ${foodIntakeToFoodInfoList.sumOf { it.second.dietaryFiber }}
-                iron: ${foodIntakeToFoodInfoList.sumOf { it.second.iron }}
+                iron: ${foodIntakeToFoodInfoList.sumOf { it.second.iron }}%
                 polysaturated_fat: ${foodIntakeToFoodInfoList.sumOf { it.second.polysaturatedFat }}
             """.trimIndent()
             stringInputForOpenAI

@@ -12,10 +12,9 @@ import org.springframework.boot.runApplication
 	value = [ExposedAutoConfiguration::class],
 	exclude = [DataSourceTransactionManagerAutoConfiguration::class]
 )
-class PodongApplication {
-
-}
+class PodongApplication
 
 fun main(args: Array<String>) {
 	runApplication<PodongApplication>(*args)
 }
+

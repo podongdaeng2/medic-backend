@@ -10,6 +10,7 @@ import podongdaeng2.chatgpt.SimpleService
 class QAController { // TODO: remove when making Prod server
     @PostMapping("/string-input-openai")
     suspend fun talkDietAdvisor(
+        @RequestParam("user_uid") userUid: Int,
         @RequestParam("food_intake") foodIntakeCsvFileString: String,
         @RequestParam("food_info") foodInfoCsvFileString: String,
         @RequestParam("user_info") userInfo: String,

@@ -1,14 +1,20 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
+	application
 	id("io.spring.dependency-management") version "1.1.4"
 	kotlin("jvm") version "1.9.23"
 	kotlin("plugin.spring") version "1.9.23"
 	kotlin("plugin.jpa") version "1.9.23"
 }
 
-group = "podongdaeng2"
-version = "0.0.1-SNAPSHOT"
+tasks.jar {
+	manifest {
+		attributes["Main-Class"] = "podongdaeng2.PodongApplicationKt"
+	}
+	duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+	from(configurations.runtimeClasspath.get().map { if (it.isDirectory) it else zipTree(it) })
+}
 
 java {
 	sourceCompatibility = JavaVersion.VERSION_17
