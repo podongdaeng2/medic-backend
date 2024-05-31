@@ -115,11 +115,13 @@ class HealthDataTest {
 
         """.trimIndent()
 
-        SimpleService.getOpenAiInputString(
-            rawFoodIntakeCsvStringData = rawFoodIntakeCsvData,
-            rawFoodInfoCsvStringData = rawFoodInfoCsvData,
-            userInfo = "172cm / 70kg / male",
-            userInput = "",
+        println(
+            SimpleService.getOpenAiInputString(
+                rawFoodIntakeCsvStringData = rawFoodIntakeCsvData,
+                rawFoodInfoCsvStringData = rawFoodInfoCsvData,
+                userInfo = "172cm / 70kg / male",
+                userInput = "",
+            )
         )
     }
 }
