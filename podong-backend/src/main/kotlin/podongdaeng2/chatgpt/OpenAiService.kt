@@ -273,7 +273,7 @@ object OpenAiService { // by lazy 선언 쓰는법 알아와서 적절한데에 
                     #
                 """.trimIndent(),
                 tools = listOf(),
-                model = ModelId("gpt-3.5-turbo"),
+                model = ModelId("gpt-4-turbo"),
             )
         )
         transaction {
