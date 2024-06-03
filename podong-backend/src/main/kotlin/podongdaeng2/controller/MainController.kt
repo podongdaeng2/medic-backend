@@ -1,9 +1,11 @@
 package podongdaeng2.controller
 
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import podongdaeng2.chatgpt.OpenAiService
+import podongdaeng2.chatgpt.SimpleService
 
 
 @RestController
@@ -20,17 +22,43 @@ class MainController {
         return OpenAiService.listAssistants()
     }
 
-    @GetMapping("/talk-diet-advisor")
+    @PostMapping("/talk-diet-advisor")
     suspend fun talkDietAdvisor(
-        @RequestParam healthData: String,
-        @RequestParam talk: String? = null,
+        @RequestParam("user_uid") userUid: Int,
+        @RequestParam("food_intake") foodIntakeCsvFileString: String? = null,
+        @RequestParam("food_info") foodInfoCsvFileString: String? = null,
+        @RequestParam("user_info") userInfo: String,
+        @RequestParam("user_input") userInput: String? = null
     ): String {
-        val stringInput = """
-            ${talk?.let { "user input: $talk" } ?: ""}
-            $healthData
-        """.trimIndent() // TODO: make service
-        return OpenAiService.talkDietAdvisor(healthData + talk)
+        return if (foodInfoCsvFileString != null && foodIntakeCsvFileString != null) {
+            // AI 통신
+            val openAiInputString = SimpleService.getOpenAiInputString(
+                rawFoodIntakeCsvStringData = foodIntakeCsvFileString,
+                rawFoodInfoCsvStringData = foodInfoCsvFileString,
+                userInfo = userInfo,
+                userInput = userInput ?: "",
+            )
+            return OpenAiService.talkDietAdvisor(openAiInputString)
+        } else if (foodInfoCsvFileString == null && foodIntakeCsvFileString == null) {
+            // 단순 통신
+            "dansun tongshin"
+        } else {
+            throw Exception("only one file is null.")
+        }
     }
+
+    // TODO: remove
+//    @GetMapping("/talk-diet-advisor")
+//    suspend fun talkDietAdvisor(
+//        @RequestParam healthData: String,
+//        @RequestParam talk: String? = null,
+//    ): String {
+//        val stringInput = """
+//            ${talk?.let { "user input: $talk" } ?: ""}
+//            $healthData
+//        """.trimIndent()
+//        return OpenAiService.talkDietAdvisor(healthData + talk)
+//    }
 
     @GetMapping("/talk-medical-guesser")
     suspend fun talkMedicalGuesser(@RequestParam talk: String): String {
