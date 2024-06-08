@@ -21,7 +21,7 @@ import java.time.LocalDateTime
 import kotlin.time.Duration.Companion.seconds
 
 fun main() {
-    val basicRepository = BasicRepository // TODO - 이게 최선인가?
+    val basicRepository = BasicRepository
     val envVar by lazy { getEnvironmentVariables() }
     val apiKey = envVar["CHATGPT_API_KEY"]
     val openAI = OpenAI(
@@ -61,7 +61,7 @@ fun main() {
         }
 
         routing {
-            get("/run-request/{uid}") {
+            get("/") {
                 call.respondText("Hello, World!")
             }
         }

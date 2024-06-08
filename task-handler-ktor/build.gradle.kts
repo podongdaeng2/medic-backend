@@ -5,7 +5,13 @@ plugins {
 }
 
 application {
-	mainClass.set("io.ktor.server.netty.EngineMain")
+	mainClass.set("podongdaeng2.ktor.server.KtorServerKt")
+}
+
+ktor {
+	fatJar {
+		archiveFileName.set("podong-ktor-openai.jar")
+	}
 }
 
 repositories {

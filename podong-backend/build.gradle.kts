@@ -1,8 +1,9 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-	application
+	id("org.springframework.boot") version "3.2.4"
 	id("io.spring.dependency-management") version "1.1.4"
+	id("java")
 	kotlin("jvm") version "1.9.23"
 	kotlin("plugin.spring") version "1.9.23"
 	kotlin("plugin.jpa") version "1.9.23"
@@ -33,7 +34,7 @@ dependencies {
 	// exposed
 	implementation("org.jetbrains.exposed:exposed-spring-boot-starter:0.49.0")
 
-	// for OpenAI - some might seem not, but it's dependency. how miserable.
+	// for OpenAI
 	runtimeOnly("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")
 	runtimeOnly("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.8.0")
 	implementation("org.springframework.boot:spring-boot-starter-webflux:3.2.4")
@@ -53,4 +54,3 @@ tasks.withType<KotlinCompile> {
 		jvmTarget = "17"
 	}
 }
-

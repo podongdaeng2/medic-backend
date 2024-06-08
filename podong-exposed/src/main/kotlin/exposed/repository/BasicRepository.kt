@@ -1,6 +1,7 @@
 package exposed.repository
 
 import enums.ApiRequestTypeEnum
+import exposed.ExposedDatabase
 import exposed.model.RunRequest
 import exposed.table.AssistantsTable
 import exposed.table.MessageThreadTable

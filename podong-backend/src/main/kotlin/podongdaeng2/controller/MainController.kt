@@ -24,7 +24,7 @@ class MainController {
 
     @PostMapping("/talk-diet-advisor")
     suspend fun talkDietAdvisor(
-        @RequestParam("user_uid") userUid: Int,
+        @RequestParam("user_uuid") userUuid: String,
         @RequestParam("food_intake") foodIntakeCsvFileString: String? = null,
         @RequestParam("food_info") foodInfoCsvFileString: String? = null,
         @RequestParam("user_info") userInfo: String,
@@ -48,17 +48,17 @@ class MainController {
     }
 
     // TODO: remove
-//    @GetMapping("/talk-diet-advisor")
-//    suspend fun talkDietAdvisor(
-//        @RequestParam healthData: String,
-//        @RequestParam talk: String? = null,
-//    ): String {
-//        val stringInput = """
-//            ${talk?.let { "user input: $talk" } ?: ""}
-//            $healthData
-//        """.trimIndent()
-//        return OpenAiService.talkDietAdvisor(healthData + talk)
-//    }
+    @GetMapping("/talk-diet-advisor-alpha")
+    suspend fun talkDietAdvisor(
+        @RequestParam healthData: String,
+        @RequestParam talk: String? = null,
+    ): String {
+        val stringInput = """
+            ${talk?.let { "user input: $talk" } ?: ""}
+            $healthData
+        """.trimIndent()
+        return OpenAiService.talkDietAdvisor(healthData + talk)
+    }
 
     @GetMapping("/talk-medical-guesser")
     suspend fun talkMedicalGuesser(@RequestParam talk: String): String {

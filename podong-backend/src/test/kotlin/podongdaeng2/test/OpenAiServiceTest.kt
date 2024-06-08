@@ -14,7 +14,7 @@ class OpenAiServiceTest {
     init {
         Database.connect(
             "jdbc:mysql://localhost:3306/podongdaeng2", driver = "com.mysql.cj.jdbc.Driver",
-            user = "root", password = "1234"
+            user = "root", password = "San1234!"
         )
     }
 
