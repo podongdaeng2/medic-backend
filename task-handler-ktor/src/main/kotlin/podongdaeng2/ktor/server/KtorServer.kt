@@ -79,7 +79,7 @@ private suspend fun handleOpenAiRequest(
         threadId = ThreadId(firstNotStartedRunRequest.threadId),
         runId = RunId(firstNotStartedRunRequest.runId)
     )
-    val intervalMillis = 8000L // TODO-ASYNC: delete after implementing async
+    val intervalMillis = 8000L
     while (true) {
         if (currentRun.completedAt != null) {
             println("RUN COMPLETED ${currentRun.completedAt}")
@@ -101,7 +101,7 @@ private suspend fun handleOpenAiRequest(
         openAI.messages(threadId = ThreadId(firstNotStartedRunRequest.threadId)).first()
     println(latestMessage.content)
     println()
-    openAI.delete(id = ThreadId(firstNotStartedRunRequest.threadId)) // TODO: DB delete
+    openAI.delete(id = ThreadId(firstNotStartedRunRequest.threadId))
     transaction {
         BasicRepository.insertMessage(
             assistantIdInput = currentRun.assistantId.id,

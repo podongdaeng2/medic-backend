@@ -10,6 +10,7 @@ import com.aallam.openai.api.file.FileUpload
 import com.aallam.openai.api.file.Purpose
 import com.aallam.openai.api.http.Timeout
 import com.aallam.openai.api.message.MessageRequest
+import com.aallam.openai.api.message.TextContent
 import com.aallam.openai.api.model.ModelId
 import com.aallam.openai.api.run.RunId
 import com.aallam.openai.api.run.RunRequest
@@ -26,6 +27,8 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import org.jetbrains.exposed.sql.transactions.transaction
 import enums.ApiRequestTypeEnum
+import io.ktor.util.reflect.*
+import java.time.LocalDateTime
 import kotlin.time.Duration.Companion.seconds
 
 object OpenAiService { // by lazy 선언 쓰는법 알아와서 적절한데에 써야할수도
@@ -83,7 +86,10 @@ object OpenAiService { // by lazy 선언 쓰는법 알아와서 적절한데에 
             )
         }
 
-        return "openAI 요청 완료"
+        return handleOpenAiRequest(
+            threadId = thread.id,
+            runId = run.id,
+        )
     }
 
     @OptIn(BetaOpenAI::class)
@@ -285,21 +291,48 @@ object OpenAiService { // by lazy 선언 쓰는법 알아와서 적절한데에 
         }
     }
 
-    suspend fun makeRunRequest(
-        requestTypeEnum: ApiRequestTypeEnum,
-        runUid: Int
-    ) { // TODO-erase: won't use at a high chance
-        val client = HttpClient() {
-            // more config can be here
+    @OptIn(BetaOpenAI::class)
+    private suspend fun handleOpenAiRequest(
+        threadId: ThreadId,
+        runId: RunId,
+    ): String {
+        var currentRun = openAI.getRun(
+            threadId = threadId,
+            runId = runId,
+        )
+        val intervalMillis = 8000L
+        while (true) {
+            if (currentRun.completedAt != null) {
+                println("RUN COMPLETED ${currentRun.completedAt}")
+                break
+            } else if (currentRun.failedAt != null) {
+                // TODO: Handle failure
+                println("FAILED RUN!! ${currentRun.failedAt}")
+                break
+            }
+
+            delay(intervalMillis) // Wait for the specified interval before the next check
+            currentRun = openAI.getRun(
+                threadId = threadId,
+                runId = runId,
+            )
         }
-        try {
-            val response: HttpResponse =
-                client.get("http://localhost:8090/run-request/") // TODO: CHANGE AFTER SERVER PUBLISHING. may diff between environment
-            println("Response from server: $response")
-        } catch (e: Exception) {
-            println("An error occurred: ${e.message}")
-        } finally {
-            client.close()
+
+        val latestMessage = openAI.messages(threadId = threadId)
+            .first()
+
+        val latestMessageString = latestMessage.content.toString().substringAfter("value=").substringBefore(", annotations=")
+        println(latestMessage.content)
+        println()
+        openAI.delete(id = threadId)
+        transaction {
+            BasicRepository.insertMessage(
+                assistantIdInput = currentRun.assistantId.id,
+                messageIdInput = latestMessage.id.id,
+                contentInput = latestMessageString
+            )
         }
+
+        return latestMessageString
     }
 }
