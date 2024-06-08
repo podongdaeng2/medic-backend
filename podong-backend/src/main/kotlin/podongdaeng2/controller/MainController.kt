@@ -30,21 +30,13 @@ class MainController {
         @RequestParam("user_info") userInfo: String,
         @RequestParam("user_input") userInput: String? = null
     ): String {
-        return if (foodInfoCsvFileString != null && foodIntakeCsvFileString != null) {
-            // AI 통신
-            val openAiInputString = SimpleService.getOpenAiInputString(
-                rawFoodIntakeCsvStringData = foodIntakeCsvFileString,
-                rawFoodInfoCsvStringData = foodInfoCsvFileString,
-                userInfo = userInfo,
-                userInput = userInput ?: "",
-            )
-            return OpenAiService.talkDietAdvisor(openAiInputString)
-        } else if (foodInfoCsvFileString == null && foodIntakeCsvFileString == null) {
-            // 단순 통신
-            "dansun tongshin"
-        } else {
-            throw Exception("only one file is null.")
-        }
+        val openAiInputString = SimpleService.getOpenAiInputString(
+            rawFoodIntakeCsvStringData = foodIntakeCsvFileString,
+            rawFoodInfoCsvStringData = foodInfoCsvFileString,
+            userInfo = userInfo,
+            userInput = userInput ?: "",
+        )
+        return OpenAiService.talkDietAdvisor(openAiInputString)
     }
 
     // TODO: remove

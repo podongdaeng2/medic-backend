@@ -11,11 +11,17 @@ import java.util.*
 
 object SimpleService {
     fun getOpenAiInputString(
-        rawFoodIntakeCsvStringData: String,
-        rawFoodInfoCsvStringData: String,
+        rawFoodIntakeCsvStringData: String?,
+        rawFoodInfoCsvStringData: String?,
         userInfo: String,
         userInput: String,
     ): String {
+        if (rawFoodIntakeCsvStringData == null || rawFoodInfoCsvStringData == null) {
+            return """
+                user input: $userInput
+                no food info provided, just have simple talk with user input
+            """.trimIndent()
+        }
         val rawFoodIntakeStringList = rawFoodIntakeCsvStringData
             .split("\n")
             .map {
