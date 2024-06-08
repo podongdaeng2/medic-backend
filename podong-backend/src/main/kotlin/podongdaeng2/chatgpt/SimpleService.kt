@@ -93,32 +93,177 @@ object SimpleService {
                                 it.first.name
                             }
                 }.joinToString()
+            val naturalLanguageNutritionInfo = setDoubleInfoOfFoodIntakeToNaturalLanguage(foodIntakeToFoodInfoList)
             val stringInputForOpenAI = """
                 Date: $eatenDate
                 user info: $userInfo
                 Foods eaten: $foodListString
                 user input: $userInput
                 
-                calorie: ${foodIntakeToFoodInfoList.sumOf { it.second.calorie }}
-                cholesterol: ${foodIntakeToFoodInfoList.sumOf { it.second.cholesterol }}
-                potassium: ${foodIntakeToFoodInfoList.sumOf { it.second.potassium }}
-                sodium: ${foodIntakeToFoodInfoList.sumOf { it.second.sodium }}
-                trans_fat: ${foodIntakeToFoodInfoList.sumOf { it.second.transFat }}
-                carbohydrate: ${foodIntakeToFoodInfoList.sumOf { it.second.carbohydrate }}
-                calcium: ${foodIntakeToFoodInfoList.sumOf { it.second.calcium }}%
-                monosaturated_fat: ${foodIntakeToFoodInfoList.sumOf { it.second.monosaturatedFat }}
-                saturated_fat: ${foodIntakeToFoodInfoList.sumOf { it.second.saturatedFat }}
-                sugar: ${foodIntakeToFoodInfoList.sumOf { it.second.sugar }}
-                vitamin_a: ${foodIntakeToFoodInfoList.sumOf { it.second.vitaminA }}%
-                vitamin_c: ${foodIntakeToFoodInfoList.sumOf { it.second.vitaminC }}%
-                protein: ${foodIntakeToFoodInfoList.sumOf { it.second.protein }}
-                total_fat: ${foodIntakeToFoodInfoList.sumOf { it.second.totalFat }}
-                dietary_fiber: ${foodIntakeToFoodInfoList.sumOf { it.second.dietaryFiber }}
-                iron: ${foodIntakeToFoodInfoList.sumOf { it.second.iron }}%
-                polysaturated_fat: ${foodIntakeToFoodInfoList.sumOf { it.second.polysaturatedFat }}
+                calorie: ${naturalLanguageNutritionInfo.calorie}
+                cholesterol: ${naturalLanguageNutritionInfo.cholesterol}
+                potassium: ${naturalLanguageNutritionInfo.potassium}
+                sodium: ${naturalLanguageNutritionInfo.sodium}
+                trans_fat: ${naturalLanguageNutritionInfo.transFat}
+                carbohydrate: ${naturalLanguageNutritionInfo.carbohydrate}
+                calcium: ${naturalLanguageNutritionInfo.calcium}
+                monosaturated_fat: ${naturalLanguageNutritionInfo.monosaturatedFat}
+                saturated_fat: ${naturalLanguageNutritionInfo.saturatedFat}
+                sugar: ${naturalLanguageNutritionInfo.sugar}
+                vitamin_a: ${naturalLanguageNutritionInfo.vitaminA}
+                vitamin_c: ${naturalLanguageNutritionInfo.vitaminC}
+                protein: ${naturalLanguageNutritionInfo.protein}
+                total_fat: ${naturalLanguageNutritionInfo.totalFat}
+                dietary_fiber: ${naturalLanguageNutritionInfo.dietaryFiber}
+                iron: ${naturalLanguageNutritionInfo.iron}
+                polysaturated_fat: ${naturalLanguageNutritionInfo.polysaturatedFat}
             """.trimIndent()
             stringInputForOpenAI
         }
         return stringOutputPerDate.joinToString(separator = "\n")
     }
+
+    fun setDoubleInfoOfFoodIntakeToNaturalLanguage(foodIntakeToFoodInfoList: List<Pair<FoodIntake, FoodInfo>>): NaturalLanguageFoodIntake {
+        return NaturalLanguageFoodIntake(
+            calorie = if (foodIntakeToFoodInfoList.sumOf { it.second.calorie } > 2700) {
+                "high"
+            } else if (foodIntakeToFoodInfoList.sumOf { it.second.calorie } < 2500) {
+                "low"
+            } else {
+                "ok"
+            },
+            cholesterol = if (foodIntakeToFoodInfoList.sumOf { it.second.cholesterol } > 300) {
+                "high"
+            } else if (foodIntakeToFoodInfoList.sumOf { it.second.cholesterol } < 0) {
+                "low"
+            } else {
+                "ok"
+            },
+            potassium = if (foodIntakeToFoodInfoList.sumOf { it.second.potassium } > 4700) {
+                "high"
+            } else if (foodIntakeToFoodInfoList.sumOf { it.second.potassium } < 3500) {
+                "low"
+            } else {
+                "ok"
+            },
+            sodium = if (foodIntakeToFoodInfoList.sumOf { it.second.sodium } > 2300) {
+                "high"
+            } else if (foodIntakeToFoodInfoList.sumOf { it.second.sodium } < 1500) {
+                "low"
+            } else {
+                "ok"
+            },
+            transFat = if (foodIntakeToFoodInfoList.sumOf { it.second.transFat } > 30) {
+                "high"
+            } else if (foodIntakeToFoodInfoList.sumOf { it.second.transFat } < 0) {
+                "low"
+            } else {
+                "ok"
+            },
+            carbohydrate = if (foodIntakeToFoodInfoList.sumOf { it.second.carbohydrate } > 400) {
+                "high"
+            } else if (foodIntakeToFoodInfoList.sumOf { it.second.carbohydrate } < 300) {
+                "low"
+            } else {
+                "ok"
+            },
+            calcium = if (foodIntakeToFoodInfoList.sumOf { it.second.calcium } > 1200) {
+                "high"
+            } else if (foodIntakeToFoodInfoList.sumOf { it.second.calcium } < 800) {
+                "low"
+            } else {
+                "ok"
+            },
+            monosaturatedFat = if (foodIntakeToFoodInfoList.sumOf { it.second.monosaturatedFat } > 2700) {
+                "high"
+            } else if (foodIntakeToFoodInfoList.sumOf { it.second.monosaturatedFat } < 2500) {
+                "low"
+            } else {
+                "ok"
+            },
+            saturatedFat = if (foodIntakeToFoodInfoList.sumOf { it.second.saturatedFat } > 50) {
+                "high"
+            } else if (foodIntakeToFoodInfoList.sumOf { it.second.saturatedFat } < 30) {
+                "low"
+            } else {
+                "ok"
+            },
+            sugar = if (foodIntakeToFoodInfoList.sumOf { it.second.sugar } > 60) {
+                "high"
+            } else if (foodIntakeToFoodInfoList.sumOf { it.second.sugar } < 0) {
+                "low"
+            } else {
+                "ok"
+            },
+            vitaminA = if (foodIntakeToFoodInfoList.sumOf { it.second.vitaminA } > 900) {
+                "high"
+            } else if (foodIntakeToFoodInfoList.sumOf { it.second.vitaminA } < 600) {
+                "low"
+            } else {
+                "ok"
+            },
+            vitaminC = if (foodIntakeToFoodInfoList.sumOf { it.second.vitaminC } > 200) {
+                "high"
+            } else if (foodIntakeToFoodInfoList.sumOf { it.second.vitaminC } < 80) {
+                "low"
+            } else {
+                "ok"
+            },
+            protein = if (foodIntakeToFoodInfoList.sumOf { it.second.protein } > 100) {
+                "high"
+            } else if (foodIntakeToFoodInfoList.sumOf { it.second.protein } < 50) {
+                "low"
+            } else {
+                "ok"
+            },
+            totalFat = if (foodIntakeToFoodInfoList.sumOf { it.second.totalFat } > 110) {
+                "high"
+            } else if (foodIntakeToFoodInfoList.sumOf { it.second.totalFat } < 40) {
+                "low"
+            } else {
+                "ok"
+            },
+            dietaryFiber = if (foodIntakeToFoodInfoList.sumOf { it.second.dietaryFiber } > 35) {
+                "high"
+            } else if (foodIntakeToFoodInfoList.sumOf { it.second.dietaryFiber } < 20) {
+                "low"
+            } else {
+                "ok"
+            },
+            iron = if (foodIntakeToFoodInfoList.sumOf { it.second.iron } > 20) {
+                "high"
+            } else if (foodIntakeToFoodInfoList.sumOf { it.second.iron } < 5) {
+                "low"
+            } else {
+                "ok"
+            },
+            polysaturatedFat = if (foodIntakeToFoodInfoList.sumOf { it.second.polysaturatedFat } > 30) {
+                "high"
+            } else if (foodIntakeToFoodInfoList.sumOf { it.second.polysaturatedFat } < 8) {
+                "low"
+            } else {
+                "ok"
+            },
+        )
+    }
+
+    data class NaturalLanguageFoodIntake(
+        val calorie: String,
+        val carbohydrate: String,
+        val protein: String,
+        val totalFat: String,
+        val sodium: String,
+        val transFat: String,
+        val calcium: String,
+        val cholesterol: String,
+        val monosaturatedFat: String,
+        val sugar: String,
+        val saturatedFat: String,
+        val potassium: String,
+        val vitaminA: String,
+        val vitaminC: String,
+        val dietaryFiber: String,
+        val iron: String,
+        val polysaturatedFat: String,
+    )
 }
