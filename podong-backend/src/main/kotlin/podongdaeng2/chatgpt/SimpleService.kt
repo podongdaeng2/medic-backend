@@ -5,6 +5,7 @@ import exposed.model.FoodIntake
 import exposed.model.MealTimeType
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeParseException
 import java.util.*
 
 object SimpleService {
@@ -31,19 +32,34 @@ object SimpleService {
 
         val formatter = DateTimeFormatter.ofPattern("yyyy. MM. dd. a h:mm:ss", Locale.KOREA)
 
-
-        val foodIntakeList = rawFoodIntakeStringList.map {
-            FoodIntake(
-                foodInfoId = it[10],
-                dataUuid = it[11],
-                name = it[13],
-                mealTimeType = MealTimeType.fromCode(it[3]),
-                amount = it[2].toDouble(),
-                comment = it[6],
-                calorie = it[7].toDouble(),
-                eatenDate = LocalDate.parse(it[5], formatter)
-            )
+        val foodIntakeList = try {
+            rawFoodIntakeStringList.map {
+                FoodIntake(
+                    foodInfoId = it[10],
+                    dataUuid = it[11],
+                    name = it[13],
+                    mealTimeType = MealTimeType.fromCode(it[3]),
+                    amount = it[2].toDouble(),
+                    comment = it[6],
+                    calorie = it[7].toDouble(),
+                    eatenDate = LocalDate.parse(it[5], formatter)
+                )
+            }
+        } catch (e: DateTimeParseException) {
+            rawFoodIntakeStringList.map {
+                FoodIntake(
+                    foodInfoId = it[10],
+                    dataUuid = it[11],
+                    name = it[13],
+                    mealTimeType = MealTimeType.fromCode(it[3]),
+                    amount = it[2].toDouble(),
+                    comment = it[6],
+                    calorie = it[7].toDouble(),
+                    eatenDate = LocalDate.parse(it[5], DateTimeFormatter.ofPattern("yyyy. MM. dd. hh:mm:ss", Locale.KOREA))
+                )
+            }
         }
+
 
 
         val foodInfoList = rawFoodInfoStringList.map {
@@ -80,7 +96,9 @@ object SimpleService {
             foodIntake to foodInfoList.single { it.dataUuid == foodIntake.foodInfoId } // may use hash
         }
 
-        val foodIntakeToFoodInfoListByEatenDate = foodIntakeToFoodInfoList.groupBy { it.first.eatenDate }
+        val foodIntakeToFoodInfoListByEatenDate = foodIntakeToFoodInfoList
+            .sortedBy { it.first.eatenDate }
+            .groupBy { it.first.eatenDate }
 
         val stringOutputPerDate = foodIntakeToFoodInfoListByEatenDate.map { eachFoodIntakeToFoodInfoListByEatenDate ->
             val eatenDate = eachFoodIntakeToFoodInfoListByEatenDate.key
@@ -120,7 +138,7 @@ object SimpleService {
             """.trimIndent()
             stringInputForOpenAI
         }
-        return stringOutputPerDate.joinToString(separator = "\n")
+        return stringOutputPerDate.last() // TODO: Last?
     }
 
     fun setDoubleInfoOfFoodIntakeToNaturalLanguage(foodIntakeToFoodInfoList: List<Pair<FoodIntake, FoodInfo>>): NaturalLanguageFoodIntake {
