@@ -36,7 +36,9 @@ class MainController {
             userInfo = userInfo,
             userInput = userInput ?: "",
         )
-        return OpenAiService.talkDietAdvisor(openAiInputString)
+        val resultString = OpenAiService.talkDietAdvisor(openAiInputString)
+        println("RESPONSE SENDING ///")
+        return resultString
     }
 
     // TODO: remove

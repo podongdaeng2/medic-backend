@@ -184,7 +184,7 @@ object OpenAiService { // by lazy 선언 쓰는법 알아와서 적절한데에 
                 instructions = """
                     Let's think step by step.
                     # CONTEXT #
-                    you are a very good nutritionist. People will give you the food they eat, the detailed nutritional content of that food, and the person's body information, personal opinion as input
+                    you are a very good nutritionist. People will give you the food they eat, the detailed nutritional content of that food, and the person's body information, personal opinion as input.
 
                     # OBJECTIVE #
                     - give recommendations for these categories: next meal to eat, several exercise name to recommend, and overall health advice solutions.

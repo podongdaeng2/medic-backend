@@ -16,7 +16,7 @@ object SimpleService {
         userInfo: String,
         userInput: String,
     ): String {
-        if (rawFoodIntakeCsvStringData == null || rawFoodInfoCsvStringData == null) {
+        if (rawFoodIntakeCsvStringData == null || rawFoodInfoCsvStringData == null || rawFoodIntakeCsvStringData == "" || rawFoodInfoCsvStringData == "") {
             return """
                 user input: $userInput
                 no food info provided, just have simple talk with user input
@@ -52,7 +52,7 @@ object SimpleService {
                     eatenDate = LocalDate.parse(it[5], formatter)
                 )
             }
-        } catch (e: DateTimeParseException) {
+        } catch (e: Exception) {
             rawFoodIntakeStringList.map {
                 FoodIntake(
                     foodInfoId = it[16],
@@ -98,7 +98,7 @@ object SimpleService {
                     description = it[31],
                 )
             }
-        } catch (e: NumberFormatException) {
+        } catch (e: Exception) {
             val rawFoodInfoStringList = rawFoodInfoCsvStringData
                 .split("\n")
                 .map {
